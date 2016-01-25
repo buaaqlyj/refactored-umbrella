@@ -237,7 +237,9 @@ api_dsp_windows.dll
 app.config
 CT*.txt
 kv*.txt
-NPOI.dll
+NPOI*.dll
+NPOI*.[Xx][Mm][Ll]
+ICSharpCode.SharpZipLib.dll
 log4net.dll
 log4net.config
 dog*.dll
