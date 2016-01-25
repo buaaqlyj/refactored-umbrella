@@ -237,6 +237,8 @@ api_dsp_windows.dll
 app.config
 CT*.txt
 kv*.txt
+NPOI.dll
+log4net.dll
 log4net.config
 dog*.dll
 PdfSharp.dll
