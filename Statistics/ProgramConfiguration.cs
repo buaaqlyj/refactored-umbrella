@@ -6,8 +6,7 @@ using System.Text;
 
 namespace Statistics
 {
-    [Serializable]
-    public static class ProgramConfiguration : ISerializable
+    public static class ProgramConfiguration
     {
         private static string docDownloadedFolder;
         private static string currentExcelFolder;

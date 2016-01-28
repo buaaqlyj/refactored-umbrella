@@ -117,8 +117,7 @@ namespace Statistics
         #endregion
 
         #region Invoke&Delegate&Event
-
-        delegate void AddDataErrorInvoke(string ex, bool log)
+        
         public void AddDataError(string ex, bool log)
         {
             dataerrorNum++;
@@ -674,6 +673,10 @@ namespace Statistics
             DataUtility.DataUtility.tbwi += new DataUtility.DataUtility.TextBoxWriteInvoke(this.TextBox_Write);
             DataUtility.DataUtility.aed += new DataUtility.DataUtility.AddExceptionDelegate(this.AddException);
             DataUtility.DataUtility.aded += new DataUtility.DataUtility.AddDataErrorDelegate(this.AddDataError);
+
+            Log.LogHelper.AddDataErrorEvent += new Log.LogHelper.AddDataErrorHandler(AddDataError);
+            Log.LogHelper.AddExceptionEvent += new Log.LogHelper.AddExceptionHandler(AddException);
+            Log.LogHelper.AddLogEvent += new Log.LogHelper.AddLogHandler(AddLog);
 
             //DataUtility.DataUtility.TryCreatFolder(Application.StartupPath + @"\日志");
             DataUtility.DataUtility.TryCreatFolder(Application.StartupPath + @"\试验证书模板");

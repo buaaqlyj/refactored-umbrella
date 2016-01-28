@@ -284,7 +284,7 @@ namespace Statistics
                 path = Path.Combine(pathBase, item);
                 if (!Directory.Exists(path))
                 {
-                    AddException("无法识别的仪器类型：" + item, true);
+                    Log.LogHelper.AddException("无法识别的仪器类型：" + item, true);
                     checkClear = false;
                     return null;
                 }
@@ -354,7 +354,7 @@ namespace Statistics
             string certId = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, "L2", out success1);
             if (!success1)
             {
-                AddException(@"无法提取到证书编号", true);
+                Log.LogHelper.AddException(@"无法提取到证书编号", true);
                 success = false;
                 newSheetIndex = -1;
                 return;
@@ -373,7 +373,7 @@ namespace Statistics
                 }
                 else if (item.Name.Contains(@"标准模板"))
                 {
-                    AddDataError(@"第" + item.Index + "页发现多余的标准模板", true);
+                    Log.LogHelper.AddDataError(@"第" + item.Index + "页发现多余的标准模板", true);
                 }
                 else
                 {
@@ -389,7 +389,7 @@ namespace Statistics
                             }
                             else
                             {
-                                AddException(@"要合并入的数据已存在于第" + item.Index + "页", true);
+                                Log.LogHelper.AddException(@"要合并入的数据已存在于第" + item.Index + "页", true);
                                 newSheetIndex = -1;
                                 success = false;
                                 return;
@@ -407,7 +407,7 @@ namespace Statistics
             {
                 if (templateIndex == -1)
                 {
-                    AddException(@"找不到数据的标准模板", true);
+                    Log.LogHelper.AddException(@"找不到数据的标准模板", true);
                     success = false;
                     newSheetIndex = -1;
                     return;
@@ -454,7 +454,7 @@ namespace Statistics
                         }
                         if (!ws1.Name.Contains(@"标准模板"))
                         {
-                            AddException(@"标准模板复制出错", true);
+                            Log.LogHelper.AddException(@"标准模板复制出错", true);
                             success = false;
                             newSheetIndex = -1;
                             return;
@@ -488,7 +488,7 @@ namespace Statistics
 
                     if (startSourceRowIndex == -1)
                     {
-                        AddException(@"找不到原始数据所在的行", true);
+                        Log.LogHelper.AddException(@"找不到原始数据所在的行", true);
                         success = false;
                         newSheetIndex = -1;
                         return;
@@ -496,21 +496,21 @@ namespace Statistics
 
                     //拷贝数据
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 2, 12, "@", out checkClear);
-                    if (!checkClear) AddException(@"《证书编号》数据复制错误", true);
+                    if (!checkClear) Log.LogHelper.AddException(@"《证书编号》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 4, 1, 4, 2, new string[] { @"送校单位：", @"单位名称：" }, "@", out checkClear);
-                    if (!checkClear) AddException(@"《送校单位》数据复制错误", true);
+                    if (!checkClear) Log.LogHelper.AddException(@"《送校单位》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 4, 5, 4, 6, @"联系地址：", "@", out checkClear);
                     //if (!checkClear) AddException(@"《联系地址》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 5, 1, 5, 2, @"仪器名称：", "@", out checkClear);
-                    if (!checkClear) AddException(@"《仪器名称》数据复制错误", true);
+                    if (!checkClear) Log.LogHelper.AddException(@"《仪器名称》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 5, 5, 5, 6, @"型号：", "@", out checkClear);
-                    if (!checkClear) AddException(@"《型号》数据复制错误", true);
+                    if (!checkClear) Log.LogHelper.AddException(@"《型号》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 5, 7, 5, 8, new string[] { @"主机编号：", @"编号：" }, "@", out checkClear);
-                    if (!checkClear) AddException(@"《主机编号》数据复制错误", true);
+                    if (!checkClear) Log.LogHelper.AddException(@"《主机编号》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 5, 9, 5, 10, @"厂家：", "@", out checkClear);
-                    if (!checkClear) AddException(@"《厂家》数据复制错误", true);
+                    if (!checkClear) Log.LogHelper.AddException(@"《厂家》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 5, 11, 5, 12, new string[] { @"探测器编号：", "电离室号：", "探测器号：" }, "@", out checkClear);
-                    if (!checkClear) AddException(@"《探测器编号》数据复制错误", true);
+                    if (!checkClear) Log.LogHelper.AddException(@"《探测器编号》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 31, 7, "", out checkClear);
                     //if (!checkClear) AddException(@"《记录者》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 31, 9, "", out checkClear);
@@ -518,11 +518,11 @@ namespace Statistics
                     CopyDate(sourceEx, sourceIndex, destiEx, ws1.Index, out checkClear);
 
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 7, 11, "0.000", out checkClear);
-                    if (needFix && !checkClear) AddException(@"《温度》数据复制错误", true);
+                    if (needFix && !checkClear) Log.LogHelper.AddException(@"《温度》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 7, 13, "0.0%", out checkClear);
-                    if (needFix && !checkClear) AddException(@"《湿度》数据复制错误", true);
+                    if (needFix && !checkClear) Log.LogHelper.AddException(@"《湿度》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 8, 10, "", out checkClear);
-                    if (needFix && !checkClear) AddException(@"《气压》数据复制错误", true);
+                    if (needFix && !checkClear) Log.LogHelper.AddException(@"《气压》数据复制错误", true);
 
                     rr = destiEx.GetRange(destiEx.ExcelWorkbook, ws1.Index, "M8", out checkClear);
                     if (needFix)
@@ -573,7 +573,7 @@ namespace Statistics
                             //Dose
                             CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 27, 13, "@", out checkClear);
                             CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 12, 4, "", out checkClear);
-                            if (!checkClear) AddException(@"《量程》数据复制错误", true);
+                            if (!checkClear) Log.LogHelper.AddException(@"《量程》数据复制错误", true);
 
                             text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, 12, 4, out checkClear).Trim();
                             dataStructList.Add(CopyThreeDoseData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 4, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear));
@@ -586,7 +586,7 @@ namespace Statistics
                             if (text.StartsWith("单位"))
                             {
                                 CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 12, 13, "", out checkClear);
-                                if (!checkClear) AddException(@"《单位》数据复制错误", true);
+                                if (!checkClear) Log.LogHelper.AddException(@"《单位》数据复制错误", true);
                             }
                             else
                             {
@@ -609,7 +609,7 @@ namespace Statistics
                                         destiEx.WriteValue(destiEx.ExcelWorkbook, ws1.Index, 12, 13, "μGy", out checkClear);
                                         break;
                                     case DataRange.Unknown:
-                                        AddException("无法判断数据单位", true);
+                                        Log.LogHelper.AddException("无法判断数据单位", true);
                                         break;
                                 }
                                 switch (dataStruct.Distance)
@@ -621,7 +621,7 @@ namespace Statistics
                                         destiEx.WriteValue(destiEx.ExcelWorkbook, ws1.Index, 6, 13, "1.5m", out checkClear);
                                         break;
                                     case Distance.Unknown:
-                                        AddException("无法获取标准值，判断测试距离", true);
+                                        Log.LogHelper.AddException("无法获取标准值，判断测试距离", true);
                                         break;
                                 }
                             }
@@ -631,7 +631,7 @@ namespace Statistics
                             //CT
                             CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 27, 13, "@", out checkClear);
                             CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 12, 4, "", out checkClear);
-                            if (!checkClear) AddException(@"《量程》数据复制错误", true);
+                            if (!checkClear) Log.LogHelper.AddException(@"《量程》数据复制错误", true);
 
                             text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, 12, 4, out checkClear).Trim();
                             dataStructList.Add(CopyThreeCTData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 4, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear));
@@ -644,7 +644,7 @@ namespace Statistics
                             if (text.StartsWith("单位"))
                             {
                                 CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 12, 13, "", out checkClear);
-                                if (!checkClear) AddException(@"《单位》数据复制错误", true);
+                                if (!checkClear) Log.LogHelper.AddException(@"《单位》数据复制错误", true);
                             }
                             else
                             {
@@ -676,7 +676,7 @@ namespace Statistics
                                         destiEx.WriteValue(destiEx.ExcelWorkbook, ws1.Index, 12, 13, "Rcm", out checkClear);
                                         break;
                                     case DataRange.Unknown:
-                                        AddException("无法判断数据单位", true);
+                                        Log.LogHelper.AddException("无法判断数据单位", true);
                                         break;
                                 }
                                 switch (dataStruct.Distance)
@@ -688,7 +688,7 @@ namespace Statistics
                                         destiEx.WriteValue(destiEx.ExcelWorkbook, ws1.Index, 6, 13, "1.5m", out checkClear);
                                         break;
                                     case Distance.Unknown:
-                                        AddException("无法获取标准值，判断测试距离", true);
+                                        Log.LogHelper.AddException("无法获取标准值，判断测试距离", true);
                                         break;
                                 }
                             }
@@ -699,7 +699,7 @@ namespace Statistics
                             CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 28, 13, "@", out checkClear);
                             //if (!checkClear) AddException(@"《备注》数据复制错误", true);
                             CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 12, 4, @"/", "", out checkClear);
-                            if (!checkClear) AddException(@"《量程》数据复制错误", true);
+                            if (!checkClear) Log.LogHelper.AddException(@"《量程》数据复制错误", true);
 
                             text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, 12, 4, out checkClear).Trim();
                             CopyThreeKVData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 4, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear);
@@ -966,7 +966,7 @@ namespace Statistics
                     }
                     else
                     {
-                        AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
+                        Log.LogHelper.AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
                         sc = false;
                     }
                 }
@@ -994,7 +994,7 @@ namespace Statistics
                     }
                     else
                     {
-                        AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
+                        Log.LogHelper.AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
                         sc = false;
                     }
                 }
@@ -1075,7 +1075,7 @@ namespace Statistics
                     }
                     else
                     {
-                        AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
+                        Log.LogHelper.AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
                         sc = false;
                     }
                 }
@@ -1119,7 +1119,7 @@ namespace Statistics
                     }
                     else
                     {
-                        AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
+                        Log.LogHelper.AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
                         sc = false;
                     }
                 }
@@ -1214,7 +1214,7 @@ namespace Statistics
                             }
                             else
                             {
-                                AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
+                                Log.LogHelper.AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
                                 sc = false;
                             }
                         }
@@ -1255,7 +1255,7 @@ namespace Statistics
                             }
                             else
                             {
-                                AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
+                                Log.LogHelper.AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
                                 sc = false;
                             }
                         }
@@ -1269,7 +1269,7 @@ namespace Statistics
                 }
                 else
                 {
-                    AddException("规范内容有误：" + text, true);
+                    Log.LogHelper.AddException("规范内容有误：" + text, true);
                 }
             }
             sc = false;
@@ -1324,7 +1324,7 @@ namespace Statistics
             }
             else
             {
-                AddException("无法判断电离室与半导体类型", true);
+                Log.LogHelper.AddException("无法判断电离室与半导体类型", true);
                 needFix = false;
                 shouldFix = true;
                 return false;
@@ -1396,7 +1396,7 @@ namespace Statistics
                 conti = false;
                 if (((int)a + (int)b + (int)c + (int)a * (int)b * (int)c == 0) && !(a == Flag.Zero && b == Flag.Zero && c == Flag.Zero))
                 {
-                    AddException("数据记录有未识别的数据", true);
+                    Log.LogHelper.AddException("数据记录有未识别的数据", true);
                 }
             }
             return conti;
@@ -1423,7 +1423,7 @@ namespace Statistics
             if (text == "")
             {
                 sc = false;
-                AddException(@"《日期》数据复制错误：" + text, true);
+                Log.LogHelper.AddException(@"《日期》数据复制错误：" + text, true);
                 return;
             }
             else
@@ -1901,8 +1901,8 @@ namespace Statistics
             }
             if (DoNotHave)
             {
-                AddException(@"仪器类型可能出现手误", true);
-                AddLog("错误47", "  仪器类型：" + str, true);
+                Log.LogHelper.AddException(@"仪器类型可能出现手误", true);
+                Log.LogHelper.AddLog("错误47", "  仪器类型：" + str, true);
             }
         }
         /// <summary>
@@ -1922,7 +1922,7 @@ namespace Statistics
                 WordUtility wu = new WordUtility(wordPath, out success);
                 if (!success)
                 {
-                    AddException("Word文档打开失败", true);
+                    Log.LogHelper.AddException("Word文档打开失败", true);
                     return;
                 }
                 string stemp1 = excel.GetText(excel.ExcelWorkbook, sourceIndex, "L2", out success);
@@ -2052,7 +2052,7 @@ namespace Statistics
                         }
                         break;
                     default:
-                        AddException("生成证书时指定了不存在的检定类型", true);
+                        Log.LogHelper.AddException("生成证书时指定了不存在的检定类型", true);
                         break;
                 }
 
@@ -2127,18 +2127,18 @@ namespace Statistics
             catch (Exception ex)
             {
                 success = false;
-                AddException("生成证书时出现错误：" + ex.Message, true);
+                Log.LogHelper.AddException("生成证书时出现错误：" + ex.Message, true);
             }
         }
 
         public static void ReportSuspiciousFiles(Dictionary<string, int> suspFiles, string filename)
         {
-            AddException("发现" + suspFiles.Count + "个可疑匹配项，暂不作任何处理", true);
-            AddLog("可疑15", "    原文件名：" + filename, true);
+            Log.LogHelper.AddException("发现" + suspFiles.Count + "个可疑匹配项，暂不作任何处理", true);
+            Log.LogHelper.AddLog("可疑15", "    原文件名：" + filename, true);
             foreach (KeyValuePair<string, int> item in suspFiles)
             {
-                AddLog("可疑16", "      文件名：" + item.Key, true);
-                AddLog("可疑17", "        可疑指数：" + item.Value + " %", true);
+                Log.LogHelper.AddLog("可疑16", "      文件名：" + item.Key, true);
+                Log.LogHelper.AddLog("可疑17", "        可疑指数：" + item.Value + " %", true);
             }
         }
 

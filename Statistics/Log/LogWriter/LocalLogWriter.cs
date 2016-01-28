@@ -137,6 +137,12 @@ namespace Statistics.Log.LogWriter
         }
         #endregion
 
+
+
+        public void record(Exception exception, LogLevel logLevel)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 

@@ -46,5 +46,16 @@ namespace Statistics.Log.LogWriter
         #endregion
 
 
+
+
+        public void record(string message, LogLevel logLevel)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void record(Exception exception, LogLevel logLevel)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
