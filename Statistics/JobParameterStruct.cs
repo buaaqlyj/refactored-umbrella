@@ -7,6 +7,7 @@ namespace Statistics
 {
     public class JobParameterStruct
     {
+        private string startupPath;
         //历史记录处理
         private string inputFile;//文件完整路径
         private string inputFolder;//输入文件夹
@@ -27,8 +28,10 @@ namespace Statistics
         private string dataTemp;//记录模板文件名
         private bool createNew;//对新记录是否建档
 
-        public JobParameterStruct(string inputFi, string inputFo, string outputFo, string certDLFo, string currentDF, string historyDF, string pdfDF, string certFo, int pattern, int type, int fix, string macT, string certT, string dataT, bool createN)
+        public JobParameterStruct(string startupPath, string inputFi, string inputFo, string outputFo, string certDLFo, string currentDF, string historyDF, string pdfDF, string certFo, int pattern, int type, int fix, string macT, string certT, string dataT, bool createN)
         {
+            this.startupPath = startupPath;
+
             inputFile = inputFi;
             inputFolder = inputFo;
             outputFolder = outputFo;
@@ -47,7 +50,7 @@ namespace Statistics
             dataTemp = dataT;
             createNew = createN;
 
-            tempFolder = DataUtility.DataUtility.PathCombine(Application.StartupPath, @"Temp\");
+            tempFolder = DataUtility.DataUtility.PathCombine(startupPath, @"Temp\");
             DataUtility.DataUtility.TryCreatFolder(tempFolder);
         }
 
@@ -199,7 +202,7 @@ namespace Statistics
         {
             get
             {
-                return DataUtility.DataUtility.PathCombine(DataUtility.DataUtility.PathCombineClassified(Application.StartupPath + @"\试验证书模板", DataPattern), certTemp);
+                return DataUtility.DataUtility.PathCombine(DataUtility.DataUtility.PathCombineClassified(startupPath + @"\试验证书模板", DataPattern), certTemp);
             }
         }
 
@@ -207,7 +210,7 @@ namespace Statistics
         {
             get
             {
-                return DataUtility.DataUtility.PathCombine(DataUtility.DataUtility.PathCombineClassified(Application.StartupPath + @"\试验记录模板", DataPattern), dataTemp);
+                return DataUtility.DataUtility.PathCombine(DataUtility.DataUtility.PathCombineClassified(startupPath + @"\试验记录模板", DataPattern), dataTemp);
             }
         }
 
