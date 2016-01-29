@@ -361,9 +361,9 @@ namespace Statistics
                 catch (Exception ex)
                 {
                     success = false;
-                    AddLog(@"异常30", ex.Message, true);
-                    AddLog(@"异常30", "行：" + rowIndex.ToString() + "，列：" + colomnIndex.ToString(), true);
-                    AddLog(@"异常31", "  " + ex.TargetSite.ToString(), true);
+                    AddLog(@"异常230", ex.Message, true);
+                    AddLog(@"异常230", "行：" + rowIndex.ToString() + "，列：" + colomnIndex.ToString(), true);
+                    AddLog(@"异常231", "  " + ex.TargetSite.ToString(), true);
                     return;
                 }
             }
@@ -640,8 +640,8 @@ namespace Statistics
                 catch (Exception ex)
                 {
                     success = false;
-                    AddLog(@"异常30", ex.Message, true);
-                    AddLog(@"异常31", "  " + ex.TargetSite.ToString(), true);
+                    AddLog(@"异常330", ex.Message, true);
+                    AddLog(@"异常331", "  " + ex.TargetSite.ToString(), true);
                     return;
                 }
             }
@@ -680,8 +680,8 @@ namespace Statistics
                 catch (Exception ex)
                 {
                     success = false;
-                    AddLog(@"异常30", ex.Message, true);
-                    AddLog(@"异常31", "  " + ex.TargetSite.ToString(), true);
+                    AddLog(@"异常430", ex.Message, true);
+                    AddLog(@"异常431", "  " + ex.TargetSite.ToString(), true);
                     return;
                 }
             }

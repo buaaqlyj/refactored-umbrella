@@ -264,8 +264,8 @@ namespace Statistics.Office
                 catch (Exception ex)
                 {
                     success = false;
-                    Log.LogHelper.AddLog(@"异常30", ex.Message, true);
-                    Log.LogHelper.AddLog(@"异常31", "  " + ex.TargetSite.ToString(), true);
+                    Log.LogHelper.AddLog(@"异常130", ex.Message, true);
+                    Log.LogHelper.AddLog(@"异常131", "  " + ex.TargetSite.ToString(), true);
                     return;
                 }
             }
