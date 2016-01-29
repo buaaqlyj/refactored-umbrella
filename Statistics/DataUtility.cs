@@ -17,46 +17,6 @@ namespace Statistics.DataUtility
 {
     public static class DataUtility
     {
-        #region Log
-        public delegate void TextBoxWriteInvoke(string str);
-        public static event TextBoxWriteInvoke tbwi;
-        public delegate void LogFileWriteInvoke(string str);
-        public static event LogFileWriteInvoke lfwi;
-        public delegate void AddExceptionDelegate(string ex, bool log);
-        public static event AddExceptionDelegate aed;
-        public delegate void AddDataErrorDelegate(string ex, bool log);
-        public static event AddDataErrorDelegate aded;
-
-        public static void AddLog(string pre, string ex, bool sw)
-        {
-            string temp = @"【" + pre + @"】" + ex;
-            if (sw)
-            {
-                lfwi(temp);
-            }
-            tbwi(temp + Environment.NewLine);
-        }
-
-        public static void AddLog(string ex, bool sw)
-        {
-            if (sw)
-            {
-                lfwi(ex);
-            }
-            tbwi(ex + Environment.NewLine);
-        }
-
-        public static void AddExceptionLog(string ex, bool log)
-        {
-            aed(ex, log);
-        }
-
-        public static void AddDataErrorLog(string ex, bool log)
-        {
-            aded(ex, log);
-        }
-        #endregion
-
         #region Folder
 
         public static void TryCreatFolder(string folderName)
@@ -199,71 +159,8 @@ namespace Statistics.DataUtility
 
         #endregion
 
-        #region Array
-
-        public static FileInfo[] CombineFileInfoArray(FileInfo[] a1, FileInfo[] a2)
-        {
-            FileInfo[] array = new FileInfo[a1.Length + a2.Length];
-            a1.CopyTo(array, 0);
-            a2.CopyTo(array, a1.Length);
-            return array;
-        }
-
-        #endregion
-
         #region Path&Filename
 
-        public static string PathCombine(string folder1, string folder2)
-        {
-            return Path.Combine(folder1, folder2);
-        }
-
-        public static string PathCombineFileExtension(string file, string extension)
-        {
-            if (!extension.StartsWith(@".")) extension = @"." + extension;
-            return file + extension;
-        }
-
-        public static string PathCombineFolderFileExtension(string folder, string file, string extension)
-        {
-            return PathCombine(folder, PathCombineFileExtension(file, extension));
-        }
-
-        public static string PathCombineClassified(string folder, int pattern)
-        {
-            string keyword = "";
-            switch (pattern)
-            {
-                case 0:
-                    //dose
-                    keyword = "剂量";
-                    break;
-                case 1:
-                    //ct
-                    keyword = "CT";
-                    break;
-                case 2:
-                    //kv
-                    keyword = "KV";
-                    break;
-            }
-            return Path.Combine(folder, keyword);
-        }
-
-        public static string PathChangeExtension(string path, string extension)
-        {
-            return Path.ChangeExtension(path, extension);
-        }
-
-        public static string PathChangeDirectory(string path, string directory)
-        {
-            return Path.Combine(directory, Path.GetFileName(path));
-        }
-
-        public static string PathGetFileName(string file)
-        {
-            return Path.GetFileName(file);
-        }
         /// <summary>
         /// 去除名称中含有的非法字符
         /// </summary>
@@ -580,7 +477,7 @@ namespace Statistics.DataUtility
                 try
                 {
                     //要备份到的位置
-                    string newfile = PathCombine(tempFolder, PathGetFileName(file));
+                    string newfile = Util.PathExt.PathCombine(tempFolder, Util.PathExt.PathGetFileName(file));
                     //要备份到的位置如果存在同名文件即删除
                     if (File.Exists(newfile))
                     {
@@ -601,14 +498,14 @@ namespace Statistics.DataUtility
                 catch (Exception ex)
                 {
                     key = "";
-                    AddExceptionLog("备份文件时出错" + ex, true);
+                    Log.LogHelper.AddException("备份文件时出错" + ex, true);
                     return false;
                 }
             }
             else
             {
                 key = "";
-                AddExceptionLog("备份的文件不存在", true);
+                Log.LogHelper.AddException("备份的文件不存在", true);
                 return false;
             }
         }
@@ -627,7 +524,7 @@ namespace Statistics.DataUtility
                     //源文件应该在的位置
                     string file = BackupList[key];
                     //备份文件位置
-                    string backfile = PathCombine(tempFolder, PathGetFileName(file));
+                    string backfile = Util.PathExt.PathCombine(tempFolder, Util.PathExt.PathGetFileName(file));
                     if (File.Exists(backfile))
                     {
                         if (File.Exists(file))
@@ -643,19 +540,19 @@ namespace Statistics.DataUtility
                     }
                     else
                     {
-                        AddExceptionLog("备份库中找不到所需的文件", true);
+                        Log.LogHelper.AddException("备份库中找不到所需的文件", true);
                         return false;
                     }
                 }
                 else
                 {
-                    AddExceptionLog("备份记录中找不到提供的恢复密钥", true);
+                    Log.LogHelper.AddException("备份记录中找不到提供的恢复密钥", true);
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                AddExceptionLog("恢复备份文件时出错：" + ex, true);
+                Log.LogHelper.AddException("恢复备份文件时出错：" + ex, true);
                 return false;
             }
         }

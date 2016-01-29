@@ -29,12 +29,19 @@ namespace Statistics.Log
         public delegate void AddDataErrorHandler(string ex, bool log);
         public static event AddExceptionHandler AddExceptionEvent;
         public delegate void AddExceptionHandler(string ex, bool log);
+        public static event AddLogWithPreHandler AddLogWithPreEvent;
+        public delegate void AddLogWithPreHandler(string pre, string ex, bool sw);
         public static event AddLogHandler AddLogEvent;
-        public delegate void AddLogHandler(string pre, string ex, bool sw);
+        public delegate void AddLogHandler(string ex, bool sw);
 
         public static void AddLog(string pre, string ex, bool sw)
         {
-            AddLogEvent(pre, ex, sw);
+            AddLogWithPreEvent(pre, ex, sw);
+        }
+
+        public static void AddLog(string ex, bool sw)
+        {
+            AddLogEvent(ex, sw);
         }
 
         public static void AddDataError(string ex, bool log)

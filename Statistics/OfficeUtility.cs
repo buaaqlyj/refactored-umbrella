@@ -71,14 +71,6 @@ namespace Statistics
         public string path = "";
         public static int docNumber = 0;
         public static object doNotSaveChanges = MSExcel.XlSaveAction.xlDoNotSaveChanges;
-        public delegate void TextBoxWriteInvoke(string str);
-        public static event TextBoxWriteInvoke tbwi;
-        public delegate void LogFileWriteInvoke(string str);
-        public static event LogFileWriteInvoke lfwi;
-        public delegate void AddExceptionDelegate(string ex, bool log);
-        public static event AddExceptionDelegate aed;
-        public delegate void AddDataErrorDelegate(string ex, bool log);
-        public static event AddDataErrorDelegate aded;
 
         public ExcelUtility(string Path, out bool success)
         {
@@ -91,13 +83,13 @@ namespace Statistics
                 }
                 else
                 {
-                    AddExceptionLog(@"文件不存在" + Environment.NewLine + path, true);
+                    Log.LogHelper.AddException(@"文件不存在" + Environment.NewLine + path, true);
                     success = false;
                 }
             }
             else
             {
-                AddLog(@"异常25", @"文件不是常见的excel文档类型", true);
+                Log.LogHelper.AddLog(@"异常25", @"文件不是常见的excel文档类型", true);
                 success = false;
             }
         }
@@ -140,7 +132,7 @@ namespace Statistics
             }
             catch (System.Exception ex)
             {
-                AddLog(@"异常24", ex.Message, true);
+                Log.LogHelper.AddLog(@"异常24", ex.Message, true);
                 success = false;
             }
         }
@@ -198,14 +190,14 @@ namespace Statistics
                 else
                 {
                     success = false;
-                    AddLog(@"异常26", @"读取数据时传入了错误的位置坐标：" + position, true);
+                    Log.LogHelper.AddLog(@"异常26", @"读取数据时传入了错误的位置坐标：" + position, true);
                     return null;
                 }
             }
             else
             {
                 success = false;
-                AddLog(@"异常27", @"文件没有正常打开，无法读取数据", true);
+                Log.LogHelper.AddLog(@"异常27", @"文件没有正常打开，无法读取数据", true);
                 return null;
             }
         }
@@ -229,7 +221,7 @@ namespace Statistics
             else
             {
                 success = false;
-                AddLog(@"异常28", @"文件没有正常打开，无法读取数据", true);
+                Log.LogHelper.AddLog(@"异常28", @"文件没有正常打开，无法读取数据", true);
                 return null;
             }
         }
@@ -253,7 +245,7 @@ namespace Statistics
             else
             {
                 success = false;
-                AddLog(@"异常29", @"文件没有正常打开，无法读取数据", true);
+                Log.LogHelper.AddLog(@"异常29", @"文件没有正常打开，无法读取数据", true);
                 return null;
             }
         }
@@ -361,16 +353,16 @@ namespace Statistics
                 catch (Exception ex)
                 {
                     success = false;
-                    AddLog(@"异常230", ex.Message, true);
-                    AddLog(@"异常230", "行：" + rowIndex.ToString() + "，列：" + colomnIndex.ToString(), true);
-                    AddLog(@"异常231", "  " + ex.TargetSite.ToString(), true);
+                    Log.LogHelper.AddLog(@"异常230", ex.Message, true);
+                    Log.LogHelper.AddLog(@"异常230", "行：" + rowIndex.ToString() + "，列：" + colomnIndex.ToString(), true);
+                    Log.LogHelper.AddLog(@"异常231", "  " + ex.TargetSite.ToString(), true);
                     return;
                 }
             }
             else
             {
                 success = false;
-                AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
+                Log.LogHelper.AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
                 return;
             }
         }
@@ -408,7 +400,7 @@ namespace Statistics
             else
             {
                 success = false;
-                AddLog(@"异常35", @"文件没有正常打开，无法读取数据", true);
+                Log.LogHelper.AddLog(@"异常35", @"文件没有正常打开，无法读取数据", true);
                 return;
             }
         }
@@ -437,15 +429,15 @@ namespace Statistics
                 catch (Exception ex)
                 {
                     success = false;
-                    AddLog(@"异常36", ex.Message, true);
-                    AddLog(@"异常37", "  " + ex.TargetSite.ToString(), true);
+                    Log.LogHelper.AddLog(@"异常36", ex.Message, true);
+                    Log.LogHelper.AddLog(@"异常37", "  " + ex.TargetSite.ToString(), true);
                     return;
                 }
             }
             else
             {
                 success = false;
-                AddLog(@"异常38", @"文件没有正常打开，无法读取数据", true);
+                Log.LogHelper.AddLog(@"异常38", @"文件没有正常打开，无法读取数据", true);
                 return;
             }
         }
@@ -479,8 +471,8 @@ namespace Statistics
             }
             catch (System.Exception ex)
             {
-                AddLog(@"异常39", ex.Message, true);
-                AddLog(@"异常40", "  " + ex.TargetSite.ToString(), true);
+                Log.LogHelper.AddLog(@"异常39", ex.Message, true);
+                Log.LogHelper.AddLog(@"异常40", "  " + ex.TargetSite.ToString(), true);
                 success = false;
             }
         }
@@ -515,8 +507,8 @@ namespace Statistics
             }
             catch (System.Exception ex)
             {
-                AddLog(@"异常41", ex.Message, true);
-                AddLog(@"异常42", "  " + ex.TargetSite.ToString(), true);
+                Log.LogHelper.AddLog(@"异常41", ex.Message, true);
+                Log.LogHelper.AddLog(@"异常42", "  " + ex.TargetSite.ToString(), true);
                 success = false;
             }
         }
@@ -640,15 +632,15 @@ namespace Statistics
                 catch (Exception ex)
                 {
                     success = false;
-                    AddLog(@"异常330", ex.Message, true);
-                    AddLog(@"异常331", "  " + ex.TargetSite.ToString(), true);
+                    Log.LogHelper.AddLog(@"异常330", ex.Message, true);
+                    Log.LogHelper.AddLog(@"异常331", "  " + ex.TargetSite.ToString(), true);
                     return;
                 }
             }
             else
             {
                 success = false;
-                AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
+                Log.LogHelper.AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
                 return;
             }
         }
@@ -680,15 +672,15 @@ namespace Statistics
                 catch (Exception ex)
                 {
                     success = false;
-                    AddLog(@"异常430", ex.Message, true);
-                    AddLog(@"异常431", "  " + ex.TargetSite.ToString(), true);
+                    Log.LogHelper.AddLog(@"异常430", ex.Message, true);
+                    Log.LogHelper.AddLog(@"异常431", "  " + ex.TargetSite.ToString(), true);
                     return;
                 }
             }
             else
             {
                 success = false;
-                AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
+                Log.LogHelper.AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
                 return;
             }
         }
@@ -732,7 +724,7 @@ namespace Statistics
                     case "120kV":
                         return 12;
                     default:
-                        AddExceptionLog("获取列索引的规范不是剂量常用的规范", true);
+                        Log.LogHelper.AddException("获取列索引的规范不是剂量常用的规范", true);
                         return 16;
                 }
             }
@@ -751,7 +743,7 @@ namespace Statistics
                     case "140kV":
                         return 12;
                     default:
-                        AddExceptionLog("获取列索引的规范不是CT常用的规范", true);
+                        Log.LogHelper.AddException("获取列索引的规范不是CT常用的规范", true);
                         return 16;
                 }
             }
@@ -761,7 +753,7 @@ namespace Statistics
             }
             else
             {
-                AddExceptionLog("获取列索引时输入了不合法的选项", true);
+                Log.LogHelper.AddException("获取列索引时输入了不合法的选项", true);
                 return 16;
             }
         }
@@ -816,7 +808,7 @@ namespace Statistics
                 }
                 else
                 {
-                    AddExceptionLog("分析规范数据时发生错误", true);
+                    Log.LogHelper.AddException("分析规范数据时发生错误", true);
                     checkClear = false;
                     break;
                 }
@@ -1109,7 +1101,7 @@ namespace Statistics
                         }
                         else
                         {
-                            AddExceptionLog("无法识别的规范", true);
+                            Log.LogHelper.AddException("无法识别的规范", true);
                         }
                     }
                 }
@@ -1213,7 +1205,7 @@ namespace Statistics
                     halfLayerText = @"6.57";
                     break;
                 default:
-                    AddExceptionLog("在统计页写入第" + columnIndex + "列的数据时遇到无法识别的规范：" + cri.Voltage, true);
+                    Log.LogHelper.AddException("在统计页写入第" + columnIndex + "列的数据时遇到无法识别的规范：" + cri.Voltage, true);
                     break;
             }
             if (volText != "")
@@ -1280,7 +1272,7 @@ namespace Statistics
                     halfLayerText = @"6.57";
                     break;
                 default:
-                    AddExceptionLog("在统计页写入第" + columnIndex + "列的数据时遇到无法识别的规范：" + cri.Voltage, true);
+                    Log.LogHelper.AddException("在统计页写入第" + columnIndex + "列的数据时遇到无法识别的规范：" + cri.Voltage, true);
                     break;
             }
             if (volText != "")
@@ -1356,7 +1348,7 @@ namespace Statistics
                     halfLayerText = @"6.57";
                     break;
                 default:
-                    AddExceptionLog("在数据页写入第" + columnIndex + "列的数据时遇到无法识别的规范：" + cri.Voltage, true);
+                    Log.LogHelper.AddException("在数据页写入第" + columnIndex + "列的数据时遇到无法识别的规范：" + cri.Voltage, true);
                     break;
             }
             if (criText != "")
@@ -1472,7 +1464,7 @@ namespace Statistics
                                     countIndex++;
                                 }
                                 item.Name = certId + "-" + countIndex;
-                                AddExceptionLog(@"有两个数据页包含了相同的证书编号", true);
+                                Log.LogHelper.AddException(@"有两个数据页包含了相同的证书编号", true);
                             }
                             sheetsName.Add(item.Name);
                         }
@@ -1490,7 +1482,7 @@ namespace Statistics
                         if (!item.Name.Contains(@"标准模板") && GetText(_excelDoc, item.Index, "A4", out checkClear).Trim().StartsWith(@"送校单位"))
                         {
                             //有记录不包含规范的证书编号
-                            AddExceptionLog(@"该文档有实验数据不包含证书编号", true);
+                            Log.LogHelper.AddException(@"该文档有实验数据不包含证书编号", true);
                         }
                     }
                     rr = null;
@@ -1579,7 +1571,7 @@ namespace Statistics
                                     countIndex++;
                                 }
                                 item.Name = certId + "-" + countIndex;
-                                AddExceptionLog(@"有两个数据页包含了相同的证书编号", true);
+                                Log.LogHelper.AddException(@"有两个数据页包含了相同的证书编号", true);
                             }
                             sheetsName.Add(item.Name);
                         }
@@ -1597,7 +1589,7 @@ namespace Statistics
                         if (!item.Name.Contains(@"标准模板") && GetText(_excelDoc, item.Index, "A4", out checkClear).Trim().StartsWith(@"送校单位"))
                         {
                             //有记录不包含规范的证书编号
-                            AddExceptionLog(@"该文档有实验数据不包含证书编号", true);
+                            Log.LogHelper.AddException(@"该文档有实验数据不包含证书编号", true);
                         }
                     }
                     rr = null;
@@ -2120,8 +2112,8 @@ namespace Statistics
                 catch (System.Exception ex)
                 {
                     success = false;
-                    AddLog(@"异常43", ex.Message, true);
-                    AddLog(@"异常44", "  " + ex.TargetSite.ToString(), true);
+                    Log.LogHelper.AddLog(@"异常43", ex.Message, true);
+                    Log.LogHelper.AddLog(@"异常44", "  " + ex.TargetSite.ToString(), true);
                 }
             }
         }
@@ -2161,8 +2153,8 @@ namespace Statistics
             {
                 success = false;
                 range = null;
-                AddLog(@"异常45", ex.Message, true);
-                AddLog(@"异常46", "  " + ex.TargetSite.ToString(), true);
+                Log.LogHelper.AddLog(@"异常45", ex.Message, true);
+                Log.LogHelper.AddLog(@"异常46", "  " + ex.TargetSite.ToString(), true);
             }
         }
         /// <summary>
@@ -2206,8 +2198,8 @@ namespace Statistics
             {
                 success = false;
                 range = null;
-                AddLog(@"异常45", ex.Message, true);
-                AddLog(@"异常46", "  " + ex.TargetSite.ToString(), true);
+                Log.LogHelper.AddLog(@"异常45", ex.Message, true);
+                Log.LogHelper.AddLog(@"异常46", "  " + ex.TargetSite.ToString(), true);
             }
         }
 
@@ -2349,13 +2341,13 @@ namespace Statistics
                                 }
                                 else if (report)
                                 {
-                                    AddDataErrorLog("KV数据第" + sourceIndex + "页第" + dataline2 + "行第" + i + "列的数据不可识别或不存在，已跳过", true);
+                                    Log.LogHelper.AddDataError("KV数据第" + sourceIndex + "页第" + dataline2 + "行第" + i + "列的数据不可识别或不存在，已跳过", true);
                                 }
                             }
                         }
                         else if (report)
                         {
-                            AddDataErrorLog("KV数据第" + sourceIndex + "页第" + dataline1 + "行第" + i + "列的数据不可识别或不存在，已跳过", true);
+                            Log.LogHelper.AddDataError("KV数据第" + sourceIndex + "页第" + dataline1 + "行第" + i + "列的数据不可识别或不存在，已跳过", true);
                         }
                     }
                 }
@@ -2397,7 +2389,7 @@ namespace Statistics
             }
             else
             {
-                AddExceptionLog(@"无法提取实验数据，数据行不在24行或25行", true);
+                Log.LogHelper.AddException(@"无法提取实验数据，数据行不在24行或25行", true);
                 return;
             }
             //清空旧数据
@@ -2462,7 +2454,7 @@ namespace Statistics
             }
             else
             {
-                AddExceptionLog(@"无法提取实验数据，数据行不在24行或25行", true);
+                Log.LogHelper.AddException(@"无法提取实验数据，数据行不在24行或25行", true);
                 return;
             }
             //清空旧数据
@@ -2530,11 +2522,11 @@ namespace Statistics
                         {
                             if (crit.Index > 2)
                             {
-                                AddDataErrorLog(cert[i] + "在" + profile + "规范下，固有误差过大：" + dig1.ToString("0.00"), true);
+                                Log.LogHelper.AddDataError(cert[i] + "在" + profile + "规范下，固有误差过大：" + dig1.ToString("0.00"), true);
                             }
                             else if (crit.Index > 0)
                             {
-                                AddDataErrorLog(cert[i] + "在" + profile + "规范下，相对固有误差过大：" + dig1.ToString("0.00"), true);
+                                Log.LogHelper.AddDataError(cert[i] + "在" + profile + "规范下，相对固有误差过大：" + dig1.ToString("0.00"), true);
                             }
                             pass = false;
                         }
@@ -2547,7 +2539,7 @@ namespace Statistics
                             double.TryParse(digStr2, out dig2);
                             if (Math.Abs(dig2) > crit.Threshold2)
                             {
-                                AddDataErrorLog(cert[i] + "在" + profile + "规范下年稳定性超差：" + dig2.ToString("0.0%"), true);
+                                Log.LogHelper.AddDataError(cert[i] + "在" + profile + "规范下年稳定性超差：" + dig2.ToString("0.0%"), true);
                                 pass = false;
                             }
                         }
@@ -2583,7 +2575,7 @@ namespace Statistics
                     {
                         if (Math.Abs(dig) >= 0.05)
                         {
-                            AddDataErrorLog(cert[i] + "在" + profile + "规范下年稳定性超差：" + dig.ToString("0.0%"), true);
+                            Log.LogHelper.AddDataError(cert[i] + "在" + profile + "规范下年稳定性超差：" + dig.ToString("0.0%"), true);
                             pass = false;
                         }
                     }
@@ -2641,9 +2633,9 @@ namespace Statistics
                                 if (strSensornew != stdStrSensornew)
                                 {
                                     pass = false;
-                                    AddDataErrorLog(@"检查校验：数据中包含不同的探测器编号", true);
-                                    AddLog(@"                检查校验：  " + standardId + ":" + stdStrSensor, true);
-                                    AddLog(@"                检查校验：  " + certId + ":" + strSensor, true);
+                                    Log.LogHelper.AddDataError(@"检查校验：数据中包含不同的探测器编号", true);
+                                    Log.LogHelper.AddLog(@"                检查校验：  " + standardId + ":" + stdStrSensor, true);
+                                    Log.LogHelper.AddLog(@"                检查校验：  " + certId + ":" + strSensor, true);
                                 }
                             }
                             else
@@ -2653,32 +2645,32 @@ namespace Statistics
                                 if (sameCom && !sameMac)
                                 {
                                     pass = false;
-                                    AddDataErrorLog(@"检查校验：主机编号不同", true);
-                                    AddLog(@"                检查校验：  " + standardId + ":" + stdStrMacSerial, true);
-                                    AddLog(@"                检查校验：  " + certId + ":" + strMacSerial, true);
+                                    Log.LogHelper.AddDataError(@"检查校验：主机编号不同", true);
+                                    Log.LogHelper.AddLog(@"                检查校验：  " + standardId + ":" + stdStrMacSerial, true);
+                                    Log.LogHelper.AddLog(@"                检查校验：  " + certId + ":" + strMacSerial, true);
                                 }
                                 if (!sameCom && sameMac)
                                 {
                                     pass = false;
-                                    AddDataErrorLog(@"检查校验：单位名称不同", true);
-                                    AddLog(@"                检查校验：  " + standardId + ":" + stdStrCompany, true);
-                                    AddLog(@"                检查校验：  " + certId + ":" + strCompany, true);
+                                    Log.LogHelper.AddDataError(@"检查校验：单位名称不同", true);
+                                    Log.LogHelper.AddLog(@"                检查校验：  " + standardId + ":" + stdStrCompany, true);
+                                    Log.LogHelper.AddLog(@"                检查校验：  " + certId + ":" + strCompany, true);
                                 }
                                 if (!sameCom && !sameMac)
                                 {
                                     pass = false;
-                                    AddDataErrorLog(@"检查校验：单位名称和主机编号均不对应", true);
-                                    AddLog(@"                检查校验：  " + standardId + ":" + stdStrCompany, true);
-                                    AddLog(@"                检查校验：  " + certId + ":" + strCompany, true);
-                                    AddLog(@"                检查校验：  " + standardId + ":" + stdStrMacSerial, true);
-                                    AddLog(@"                检查校验：  " + certId + ":" + strMacSerial, true);
+                                    Log.LogHelper.AddDataError(@"检查校验：单位名称和主机编号均不对应", true);
+                                    Log.LogHelper.AddLog(@"                检查校验：  " + standardId + ":" + stdStrCompany, true);
+                                    Log.LogHelper.AddLog(@"                检查校验：  " + certId + ":" + strCompany, true);
+                                    Log.LogHelper.AddLog(@"                检查校验：  " + standardId + ":" + stdStrMacSerial, true);
+                                    Log.LogHelper.AddLog(@"                检查校验：  " + certId + ":" + strMacSerial, true);
                                 }
                                 if (strTypenew != stdStrTypenew)
                                 {
                                     pass = false;
-                                    AddDataErrorLog(@"检查校验：仪器名称不同", true);
-                                    AddLog(@"                检查校验：  " + standardId + ":" + stdStrType, true);
-                                    AddLog(@"                检查校验：  " + certId + ":" + strType, true);
+                                    Log.LogHelper.AddDataError(@"检查校验：仪器名称不同", true);
+                                    Log.LogHelper.AddLog(@"                检查校验：  " + standardId + ":" + stdStrType, true);
+                                    Log.LogHelper.AddLog(@"                检查校验：  " + certId + ":" + strType, true);
                                 }
                             }
                         }
@@ -2698,11 +2690,11 @@ namespace Statistics
                                     {
                                         if (fulltest)
                                         {
-                                            AddExceptionLog("检查校验：" + item.Name + "页" + DataUtility.DataUtility.PositionString(24, columnIndex) + "位置出现异常的数据", true);
+                                            Log.LogHelper.AddException("检查校验：" + item.Name + "页" + DataUtility.DataUtility.PositionString(24, columnIndex) + "位置出现异常的数据", true);
                                         }
                                         else
                                         {
-                                            AddDataErrorLog("检查校验：" + item.Name + "页" + DataUtility.DataUtility.PositionString(24, columnIndex) + "位置出现异常的数据", true);
+                                            Log.LogHelper.AddDataError("检查校验：" + item.Name + "页" + DataUtility.DataUtility.PositionString(24, columnIndex) + "位置出现异常的数据", true);
                                         }
                                     }
                                 }
@@ -2716,7 +2708,7 @@ namespace Statistics
                         {
                             //有记录不包含规范的证书编号
                             pass = false;
-                            AddExceptionLog(@"检查校验：该文档有实验数据不包含证书编号", true);
+                            Log.LogHelper.AddException(@"检查校验：该文档有实验数据不包含证书编号", true);
                         }
                     }
                 }
@@ -2737,13 +2729,13 @@ namespace Statistics
             object missing = Type.Missing;
             try
             {
-                string temp = DataUtility.DataUtility.PathChangeDirectory(targetPath, tempPath);
+                string temp = Util.PathExt.PathChangeDirectory(targetPath, tempPath);
                 _excelDoc.ExportAsFixedFormat(MSExcel.XlFixedFormatType.xlTypePDF, temp, MSExcel.XlFixedFormatQuality.xlQualityStandard, true, false, missing, missing, false, missing);
                 success = PDFEncrypt(temp, targetPath, true);
             }
             catch (Exception ex)
             {
-                AddExceptionLog(ex.Message, true);
+                Log.LogHelper.AddException(ex.Message, true);
                 success = false;
             }
         }
@@ -2785,7 +2777,7 @@ namespace Statistics
             }
             catch (Exception ex)
             {
-                AddExceptionLog("PDF加密时出错：" + ex.Message, true);
+                Log.LogHelper.AddException("PDF加密时出错：" + ex.Message, true);
                 return false;
             }
         }
@@ -2806,7 +2798,7 @@ namespace Statistics
             }
             catch (Exception ex)
             {
-                AddLog(@"退出23", "  " + ex.Message, false);
+                Log.LogHelper.AddLog(@"退出23", "  " + ex.Message, false);
             }
             finally
             {
@@ -2866,38 +2858,6 @@ namespace Statistics
 
         #endregion
 
-        #region Log
-
-        public void AddLog(string pre, string ex, bool sw)
-        {
-            string temp = @"【" + pre + @"】" + ex;
-            if (sw)
-            {
-                lfwi(temp);
-            }
-            tbwi(temp + Environment.NewLine);
-        }
-
-        public void AddLog(string ex, bool sw)
-        {
-            if (sw)
-            {
-                lfwi(ex);
-            }
-            tbwi(ex + Environment.NewLine);
-        }
-
-        public void AddExceptionLog(string ex, bool log)
-        {
-            aed(ex, log);
-        }
-
-        public void AddDataErrorLog(string ex, bool log)
-        {
-            aded(ex, log);
-        }
-        #endregion
-
         #region Property
 
         public MSExcel._Application ExcelApp
@@ -2943,14 +2903,6 @@ namespace Statistics
         public string path = "";
         public static int docNumber = 0;
         public static object doNotSaveChanges = MSExcel.XlSaveAction.xlDoNotSaveChanges;
-        public delegate void TextBoxWriteInvoke(string str);
-        public static event TextBoxWriteInvoke tbwi;
-        public delegate void LogFileWriteInvoke(string str);
-        public static event LogFileWriteInvoke lfwi;
-        public delegate void AddExceptionDelegate(string ex, bool log);
-        public static event AddExceptionDelegate aed;
-        public delegate void AddDataErrorDelegate(string ex, bool log);
-        public static event AddDataErrorDelegate aded;
 
         [DllImport(@"User32.dll", CharSet = CharSet.Auto)]
         public static extern int GetWindowThreadProcessId(IntPtr hwnd, out int ID);
@@ -2992,13 +2944,13 @@ namespace Statistics
                 }
                 else
                 {
-                    AddExceptionLog(@"文件不存在" + Environment.NewLine + path, true);
+                    Log.LogHelper.AddException(@"文件不存在" + Environment.NewLine + path, true);
                     success = false;
                 }
             }
             else
             {
-                AddLog(@"异常25", @"文件不是常见的word文档类型", true);
+                Log.LogHelper.AddLog(@"异常25", @"文件不是常见的word文档类型", true);
                 success = false;
             }
         }
@@ -3027,7 +2979,7 @@ namespace Statistics
             }
             catch (System.Exception ex)
             {
-                AddLog(@"异常24", ex.Message, true);
+                Log.LogHelper.AddLog(@"异常24", ex.Message, true);
                 success = false;
             }
         }
@@ -3069,7 +3021,7 @@ namespace Statistics
             }
             else
             {
-                AddExceptionLog("查找书签失败，书签名：" + bookmark.ToString(), true);
+                Log.LogHelper.AddException("查找书签失败，书签名：" + bookmark.ToString(), true);
             }
         }
 
@@ -3097,7 +3049,7 @@ namespace Statistics
             }
             else
             {
-                AddExceptionLog("查找书签失败，书签名：" + bookmark.ToString(), true);
+                Log.LogHelper.AddException("查找书签失败，书签名：" + bookmark.ToString(), true);
             }
         }
 
@@ -3113,7 +3065,7 @@ namespace Statistics
             catch (Exception ex)
             {
                 success = false;
-                AddExceptionLog(ex.Message, true);
+                Log.LogHelper.AddException(ex.Message, true);
             }
         }
 
@@ -3134,7 +3086,7 @@ namespace Statistics
             }
             catch (Exception ex)
             {
-                AddLog(@"退出23", "  " + ex.Message, false);
+                Log.LogHelper.AddLog(@"退出23", "  " + ex.Message, false);
             }
             finally
             {
@@ -3192,38 +3144,6 @@ namespace Statistics
             finally { o = null; }
         }
 
-        #endregion
-
-        #region Log
-
-        public void AddLog(string pre, string ex, bool sw)
-        {
-            string temp = @"【" + pre + @"】" + ex;
-            if (sw)
-            {
-                lfwi(temp);
-            }
-            tbwi(temp + Environment.NewLine);
-        }
-
-        public void AddLog(string ex, bool sw)
-        {
-            if (sw)
-            {
-                lfwi(ex);
-            }
-            tbwi(ex + Environment.NewLine);
-        }
-
-        public void AddExceptionLog(string ex, bool log)
-        {
-            aed(ex, log);
-        }
-
-        public void AddDataErrorLog(string ex, bool log)
-        {
-            aded(ex, log);
-        }
         #endregion
 
         #region Property

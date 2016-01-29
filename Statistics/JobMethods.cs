@@ -291,7 +291,7 @@ namespace Statistics
                 files = (new DirectoryInfo(path)).GetFiles(extension, SearchOption.AllDirectories);
                 if (files.Length > 0)
                 {
-                    allfiles = DataUtility.DataUtility.CombineFileInfoArray(allfiles, files);
+                    allfiles = Util.ArrayExt.CombineArray<FileInfo>(allfiles, files);
                 }
             }
             checkClear = true;

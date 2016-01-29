@@ -64,7 +64,7 @@ namespace Statistics
     {
         bool checkClear = false;
         //StreamWriter logFile = null;
-        bool checkSuperDog = false;
+        bool checkSuperDog = true;
         public bool isWorking, isStopping;
         StreamWriter logFile = null;
         Action<JobParameterStruct> mi;
@@ -455,14 +455,14 @@ namespace Statistics
         {
             if (!isWorking)
             {
-                existFile = (new DirectoryInfo(DataUtility.DataUtility.PathCombineClassified(ProgramConfiguration.ArchivedExcelFolder, comboBox1.SelectedIndex))).GetFiles(@"*.xls*", SearchOption.AllDirectories);
+                existFile = (new DirectoryInfo(Util.PathExt.PathCombineClassified(ProgramConfiguration.ArchivedExcelFolder, comboBox1.SelectedIndex))).GetFiles(@"*.xls*", SearchOption.AllDirectories);
             }
         }
 
         private void updateSelectionAndLabel()
         {
-            string dpath = DataUtility.DataUtility.PathCombineClassified(System.Windows.Forms.Application.StartupPath + @"\试验记录模板\", comboBox1.SelectedIndex);
-            string cpath = DataUtility.DataUtility.PathCombineClassified(System.Windows.Forms.Application.StartupPath + @"\试验证书模板\", comboBox1.SelectedIndex);
+            string dpath = Util.PathExt.PathCombineClassified(System.Windows.Forms.Application.StartupPath + @"\试验记录模板\", comboBox1.SelectedIndex);
+            string cpath = Util.PathExt.PathCombineClassified(System.Windows.Forms.Application.StartupPath + @"\试验证书模板\", comboBox1.SelectedIndex);
             string keyword = "";
             string dataType = "";
             //数据类型
@@ -667,24 +667,10 @@ namespace Statistics
             logFile = new StreamWriter(Application.StartupPath + @"\日志\" + DateTime.Now.ToString(@"yyyyMMdd-HH-mm-ss") + @".txt");
             //LogHelper.Init();
 
-            ExcelUtility.lfwi += new ExcelUtility.LogFileWriteInvoke(this.Log_Write);
-            ExcelUtility.tbwi += new ExcelUtility.TextBoxWriteInvoke(this.TextBox_Write);
-            ExcelUtility.aed += new ExcelUtility.AddExceptionDelegate(this.AddException);
-            ExcelUtility.aded += new ExcelUtility.AddDataErrorDelegate(this.AddDataError);
-
-            WordUtility.lfwi += new WordUtility.LogFileWriteInvoke(this.Log_Write);
-            WordUtility.tbwi += new WordUtility.TextBoxWriteInvoke(this.TextBox_Write);
-            WordUtility.aed += new WordUtility.AddExceptionDelegate(this.AddException);
-            WordUtility.aded += new WordUtility.AddDataErrorDelegate(this.AddDataError);
-
-            DataUtility.DataUtility.lfwi += new DataUtility.DataUtility.LogFileWriteInvoke(this.Log_Write);
-            DataUtility.DataUtility.tbwi += new DataUtility.DataUtility.TextBoxWriteInvoke(this.TextBox_Write);
-            DataUtility.DataUtility.aed += new DataUtility.DataUtility.AddExceptionDelegate(this.AddException);
-            DataUtility.DataUtility.aded += new DataUtility.DataUtility.AddDataErrorDelegate(this.AddDataError);
-
             Log.LogHelper.AddDataErrorEvent += new Log.LogHelper.AddDataErrorHandler(AddDataError);
             Log.LogHelper.AddExceptionEvent += new Log.LogHelper.AddExceptionHandler(AddException);
-            Log.LogHelper.AddLogEvent += new Log.LogHelper.AddLogHandler(AddLog);
+            Log.LogHelper.AddLogWithPreEvent += new Log.LogHelper.AddLogWithPreHandler(AddLog);
+            Log.LogHelper.AddLogEvent += new LogHelper.AddLogHandler(AddLog);
 
             //DataUtility.DataUtility.TryCreatFolder(Application.StartupPath + @"\日志");
             DataUtility.DataUtility.TryCreatFolder(Application.StartupPath + @"\试验证书模板");
@@ -1304,7 +1290,7 @@ namespace Statistics
                         if (hasArchieved)
                         {
                             //不存在，复制当前记录过去
-                            newName = DataUtility.DataUtility.PathRightFileName(DataUtility.DataUtility.PathCombine(output, strType), tempName, fi.Extension, "_new");
+                            newName = DataUtility.DataUtility.PathRightFileName(Util.PathExt.PathCombine(output, strType), tempName, fi.Extension, "_new");
                             _sr.ExcelWorkbook.SaveAs(newName, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, MSExcel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
                             temp_fi = new FileInfo(newName);
                             JobMethods.Statistic(_sr, pattern, Perfect, strCompany, strType, tempName, certId);
@@ -2018,7 +2004,7 @@ namespace Statistics
                     {
                         //不存在，复制当前记录过去
                         //1.合成新文件名，按新名另存，定义为temp_fi
-                        newName = DataUtility.DataUtility.PathCombineFolderFileExtension(output, DataUtility.DataUtility.FileNameCleanName(tempName), fi.Extension);
+                        newName = Util.PathExt.PathCombineFolderFileExtension(output, DataUtility.DataUtility.FileNameCleanName(tempName), fi.Extension);
                         fileText = newName;
                         _sr.ExcelWorkbook.SaveAs(newName, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, MSExcel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
                         temp_fi = new FileInfo(newName);
