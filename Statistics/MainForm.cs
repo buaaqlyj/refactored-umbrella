@@ -608,39 +608,47 @@ namespace Statistics
                 ListViewItem lvi = null;
                 Color textColor = Color.Black;
                 int abnormalItemCount = 0;
-                foreach (string item in standardUsage[dataType])
+                if (standardUsage.Count < 1)
                 {
-                    if (standard[item].State == "正常")
-                    {
-                        textColor = Color.Green;
-                    }
-                    else if (standard[item].State == "即将过期")
-                    {
-                        textColor = Color.DarkOrange;
-                        abnormalItemCount++;
-                    }
-                    else
-                    {
-                        textColor = Color.Red;
-                        abnormalItemCount++;
-                    }
-                    lvi = new ListViewItem(new string[] { standard[item].Name, standard[item].Date, standard[item].State }, -1, textColor, System.Drawing.Color.Empty, null);
-                    lvItem.Add(lvi);
-                }
-                listView1.Items.Clear();
-                foreach (ListViewItem item in lvItem)
-                {
-                    listView1.Items.Add(item);
-                }
-                if (abnormalItemCount > 0)
-                {
-                    label19.Text = "有标准仪器已超期或即将超期！";
+                    label19.Text = "未找到标准仪器信息！";
                     label19.ForeColor = Color.DarkOrange;
                 }
                 else
                 {
-                    label19.Text = "标准仪器状态正常！";
-                    label19.ForeColor = Color.Green;
+                    foreach (string item in standardUsage[dataType])
+                    {
+                        if (standard[item].State == "正常")
+                        {
+                            textColor = Color.Green;
+                        }
+                        else if (standard[item].State == "即将过期")
+                        {
+                            textColor = Color.DarkOrange;
+                            abnormalItemCount++;
+                        }
+                        else
+                        {
+                            textColor = Color.Red;
+                            abnormalItemCount++;
+                        }
+                        lvi = new ListViewItem(new string[] { standard[item].Name, standard[item].Date, standard[item].State }, -1, textColor, System.Drawing.Color.Empty, null);
+                        lvItem.Add(lvi);
+                    }
+                    listView1.Items.Clear();
+                    foreach (ListViewItem item in lvItem)
+                    {
+                        listView1.Items.Add(item);
+                    }
+                    if (abnormalItemCount > 0)
+                    {
+                        label19.Text = "有标准仪器已超期或即将超期！";
+                        label19.ForeColor = Color.DarkOrange;
+                    }
+                    else
+                    {
+                        label19.Text = "标准仪器状态正常！";
+                        label19.ForeColor = Color.Green;
+                    }
                 }
             }
         }
