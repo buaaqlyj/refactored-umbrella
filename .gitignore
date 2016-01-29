@@ -255,3 +255,4 @@ TestConsole/
 InfoGrabber/
 Statistics.csproj
 Deprecated*.txt
+Office/*.dll
