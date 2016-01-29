@@ -1304,7 +1304,7 @@ namespace Statistics
                         if (hasArchieved)
                         {
                             //不存在，复制当前记录过去
-                            newName = DataUtility.DataUtility.PathRightFileName(output, tempName, fi.Extension, "_new");
+                            newName = DataUtility.DataUtility.PathRightFileName(DataUtility.DataUtility.PathCombine(output, strType), tempName, fi.Extension, "_new");
                             _sr.ExcelWorkbook.SaveAs(newName, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, MSExcel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
                             temp_fi = new FileInfo(newName);
                             JobMethods.Statistic(_sr, pattern, Perfect, strCompany, strType, tempName, certId);
