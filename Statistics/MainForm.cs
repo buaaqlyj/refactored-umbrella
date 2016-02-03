@@ -64,7 +64,7 @@ namespace Statistics
     {
         bool checkClear = false;
         //StreamWriter logFile = null;
-        bool checkSuperDog = true;
+        bool checkSuperDog = false;
         public bool isWorking, isStopping;
         StreamWriter logFile = null;
         Action<JobParameterStruct> mi;
@@ -1072,7 +1072,7 @@ namespace Statistics
                     _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 8, 13, "不修正", out success);
                 }
                 //写入记录者
-                _sr.WriteImage(_sr.ExcelWorkbook, ws1.Index, 29, 7, person, 45, 28, out success);
+                _sr.WriteImage(_sr.ExcelWorkbook, ws1.Index, 29, 7, Util.PathExt.PathCombine(Application.StartupPath, person.Path), 45, 28, out success);
 
                 _sr.ExcelWorkbook.Save();
             }
@@ -1480,7 +1480,7 @@ namespace Statistics
                         //找到序号的话，加入校核人的签名，删除其他sheet
                         if (stateIndex > 0 && stateIndex < _sr.ExcelWorkbook.Worksheets.Count)
                         {
-                            _sr.WriteImage(_sr.ExcelWorkbook, stateIndex, 29, 9, person, 45, 28, out success);
+                            _sr.WriteImage(_sr.ExcelWorkbook, stateIndex, 29, 9, Util.PathExt.PathCombine(Application.StartupPath, person.Path), 45, 28, out success);
                             for (int i = _sr.ExcelWorkbook.Worksheets.Count; i > 0; i--)
                             {
                                 if (i != stateIndex)

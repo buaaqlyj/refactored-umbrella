@@ -7,9 +7,15 @@ namespace Util
 {
     public static class PathExt
     {
+        //Override default Combine method because it returns short path when the path is under applications' folder.
         public static string PathCombine(string folder1, string folder2)
         {
-            return Path.Combine(folder1, folder2);
+            string combinedName = folder1 + @"\" + folder2;
+            while (combinedName.Contains(@"\\"))
+            {
+                combinedName = combinedName.Replace(@"\\", @"\");
+            }
+            return combinedName;
         }
 
         public static string PathCombineFileExtension(string file, string extension)

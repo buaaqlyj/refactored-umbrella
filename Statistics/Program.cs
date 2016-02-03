@@ -16,7 +16,7 @@ namespace Statistics
             Application.SetCompatibleTextRenderingDefault(false);
             //Application.Run(new MainForm());
             //myDog.RunDogTesting();
-            bool checkSuperDog = true;
+            bool checkSuperDog = false;
             SuperDog.SuperDogSeries myDog = new SuperDog.SuperDogSeries();
             if (!checkSuperDog || myDog.DogFlag)
             {

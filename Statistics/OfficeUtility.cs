@@ -608,7 +608,7 @@ namespace Statistics
         /// 注意：图片必须是绝对物理路径    /// </summary>  
         /// <param name="RangeName">单元格名称，例如：B4</param>  
         /// <param name="PicturePath">要插入图片的绝对路径。</param> 
-        public void WriteImage(MSExcel._Workbook _excelDoc, int sheetIndex, int row, int col, SuperDog.Person person, out bool success)
+        public void WriteImage(MSExcel._Workbook _excelDoc, int sheetIndex, int row, int col, string fileName, out bool success)
         {
             if (_excelDoc != null)
             {
@@ -619,7 +619,7 @@ namespace Statistics
                     MSExcel.Range _excelRge = _excelSht.get_Range(DataUtility.DataUtility.PositionString(row, col, out checkSta), DataUtility.DataUtility.PositionString(row, col, out checkSta));
                     _excelRge.Select();
                     MSExcel.Pictures pics = (MSExcel.Pictures)_excelSht.Pictures(Missing.Value);
-                    pics.Insert(Application.StartupPath + person.Path, Missing.Value);
+                    pics.Insert(fileName, Missing.Value);
                     //IDataObject data = null;
                     //data.SetData(DataFormats.Bitmap, image);
 
@@ -652,7 +652,7 @@ namespace Statistics
         /// <param name="PicturePath">要插入图片的绝对路径。</param>  
         /// <param name="PictuteWidth">插入后，图片在Excel中显示的宽度。</param>    
         /// <param name="PictureHeight">插入后，图片在Excel中显示的高度。</param>    
-        public void WriteImage(MSExcel._Workbook _excelDoc, int sheetIndex, int row, int col, SuperDog.Person person, float PictuteWidth, float PictureHeight, out bool success)
+        public void WriteImage(MSExcel._Workbook _excelDoc, int sheetIndex, int row, int col, string fileName, float PictuteWidth, float PictureHeight, out bool success)
         {
             if (_excelDoc != null)
             {
@@ -665,7 +665,7 @@ namespace Statistics
                     _excelRge.Select();
                     PicLeft = Convert.ToSingle(_excelRge.Left);
                     PicTop = Convert.ToSingle(_excelRge.Top);
-                    _excelSht.Shapes.AddPicture(Application.StartupPath + person.Path, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue, PicLeft, PicTop, PictuteWidth, PictureHeight);
+                    _excelSht.Shapes.AddPicture(fileName, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue, PicLeft, PicTop, PictuteWidth, PictureHeight);
                     success = checkSta;
                     return;
                 }
