@@ -25,6 +25,7 @@ namespace Statistics.Office.Excel
             _valid = ChangeStringToNumber(position, out _row, out _col);
         }
 
+        #region Class Member
         public static bool ChangeNumberToString(int rowIndex, int columnIndex, out string position)
         {
             if (rowIndex > 0 && columnIndex > 0)
@@ -45,9 +46,9 @@ namespace Statistics.Office.Excel
             throw new Exception("Invalid arguments! Row = " + rowIndex + ", Col = " + columnIndex + ".", null);
         }
 
-        public static bool ChangeStringToNumber(string pos, out int row, out int col)
+        public static bool ChangeStringToNumber(string positionString, out int row, out int col)
         {
-            char[] charArr = pos.Trim().ToUpper().ToCharArray();
+            char[] charArr = positionString.Trim().ToUpper().ToCharArray();
             if (charArr.Length > 0)
             {
                 int stage = 0;
@@ -96,7 +97,7 @@ namespace Statistics.Office.Excel
                     }
                     if (stage > 2)
                     {
-                        throw new Exception("Invalid argument. Unrecognised end. Position: " + pos, null);
+                        throw new ArgumentException("Excel位置不能识别: " + positionString, "positionString");
                     }
                 }
                 return true;
@@ -106,10 +107,12 @@ namespace Statistics.Office.Excel
                 row = 1;
                 col = 1;
 
-                throw new Exception("Invalid argument. The length of position string should be positive. Position: " + pos, null);
+                throw new ArgumentException("Excel位置为空，不能识别: " + positionString, "positionString");
             }
         }
+        #endregion
 
+        #region Property
         public int RowIndex
         {
             get
@@ -141,5 +144,13 @@ namespace Statistics.Office.Excel
                 return _valid;
             }
         }
+        #endregion
+
+        #region Public Member
+        public ExcelPosition GoDown()
+        {
+            return new ExcelPosition(_row + 1, _col);
+        }
+        #endregion
     }
 }

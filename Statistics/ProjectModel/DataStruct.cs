@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Statistics
+namespace Statistics.ProjectModel
 {
     public class DataStruct
     {
@@ -133,7 +133,7 @@ namespace Statistics
 
         }
 
-        public static DataStruct CalDataRange(ArrayList dataStructList, string rangeText, int pattern, out bool success)
+        public static DataStruct CalDataRange(List<DataStruct> dataStructList, string rangeText, int pattern, out bool success)
         {
             int count1 = 0, count2 = 0;
             double daav = 0, diav = 0;
@@ -162,6 +162,7 @@ namespace Statistics
                 diav /= count2;
             }
             success = true;
+            this(daav, diav, rangeText, pattern);
             return new DataStruct(daav, diav, rangeText, pattern);
         }
 

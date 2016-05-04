@@ -41,24 +41,24 @@ namespace Statistics.Office
             docAppDic.Add(pid, apVar.App);
         }
 
-        public static void TryCloseDoc(ref MSExcel._Workbook wb, out bool success)
+        public static void TryCloseDoc(ref MSExcel._Workbook wb)
         {
-            success = true;
+
         }
 
-        public static void TryCloseApp(ref MSExcel._Application ap, out bool success)
+        public static void TryCloseApp(ref MSExcel._Application ap)
         {
-            success = true;
+
         }
 
         #region GetRange
 
-        public static MSExcel.Range GetRange(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position, out bool success)
+        public static MSExcel.Range GetRange(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position)
         {
-            return GetRange(_excelDoc, sheetIndex, position, position, out success);
+            return GetRange(_excelDoc, sheetIndex, position, position);
         }
 
-        public static MSExcel.Range GetRange(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position1, ExcelPosition position2, out bool success)
+        public static MSExcel.Range GetRange(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position1, ExcelPosition position2)
         {
             if (_excelDoc != null)
             {
@@ -66,19 +66,16 @@ namespace Statistics.Office
                 {
                     MSExcel.Worksheet _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
                     MSExcel.Range _excelRge = (MSExcel.Range)_excelSht.Cells.get_Range(position1, position2);
-                    success = true;
                     return _excelRge;
                 }
                 else
                 {
-                    success = false;
                     Log.LogHelper.AddLog(@"异常26", @"读取数据时传入了错误的位置坐标：" + position1, true);
                     return null;
                 }
             }
             else
             {
-                success = false;
                 Log.LogHelper.AddLog(@"异常27", @"文件没有正常打开，无法读取数据", true);
                 return null;
             }
@@ -87,23 +84,23 @@ namespace Statistics.Office
 
         #region GetText
 
-        public static string GetText(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position, out bool success)
+        public static string GetText(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position)
         {
-            MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, position, out success);
-            if (success)
+            try
             {
+                MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, position);
                 return _excelRge.Text.ToString();
             }
-            else
+            catch
             {
                 return "";
             }
         }
 
-        public static string GetValueText(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position, out bool success)
+        public static string GetValueText(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position)
         {
-            MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, position, out success);
-            if (success && _excelRge != null)
+            MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, position);
+            if (_excelRge != null)
             {
                 return _excelRge.Value2.ToString();
             }
@@ -113,15 +110,15 @@ namespace Statistics.Office
             }
         }
 
-        public static string GetMergedContent(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position1, ExcelPosition position2, string title, out bool success)
+        public static string GetMergedContent(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position1, ExcelPosition position2, string title)
         {
-            return GetMergedContent(_excelDoc, sheetIndex, position1, position2, new string[] { title }, out success);
+            return GetMergedContent(_excelDoc, sheetIndex, position1, position2, new string[] { title });
         }
 
-        public static string GetMergedContent(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position1, ExcelPosition position2, string[] titles, out bool success)
+        public static string GetMergedContent(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position1, ExcelPosition position2, string[] titles)
         {
-            string temp_text1 = GetText(_excelDoc, sheetIndex, position1, out success).Replace(@":", "：").Replace(@" ", "");
-            string temp_text2 = GetText(_excelDoc, sheetIndex, position2, out success).Replace(@":", "：").Replace(@" ", "");
+            string temp_text1 = GetText(_excelDoc, sheetIndex, position1).Replace(@":", "：").Replace(@" ", "");
+            string temp_text2 = GetText(_excelDoc, sheetIndex, position2).Replace(@":", "：").Replace(@" ", "");
 
             if (!temp_text1.Equals(""))
             {
@@ -131,18 +128,15 @@ namespace Statistics.Office
                     {
                         if (temp_text2 != "")
                         {
-                            success = true;
                             return temp_text2;
                         }
                         else
                         {
-                            success = false;
                             return "/";
                         }
                     }
                     else
                     {
-                        success = true;
                         return temp_text1.Replace(item, "").Trim();
                     }
                 }
@@ -157,17 +151,14 @@ namespace Statistics.Office
                     text = text.Replace(item, "").Trim();
                     if (text != "")
                     {
-                        success = true;
                         return text;
                     }
                     else
                     {
-                        success = false;
                         return "/";
                     }
                 }
             }
-            success = false;
             return "";
         }
         #endregion
@@ -185,7 +176,7 @@ namespace Statistics.Office
                     _excelSht.Cells[position.RowIndex, position.ColumnIndex] = wValue;
                     if (!string.IsNullOrWhiteSpace(numberFormat))
                     {
-                        MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, position, out checkSta);
+                        MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, position);
                         _excelRge.NumberFormatLocal = numberFormat;
                     }
                     success = checkSta;
@@ -213,8 +204,7 @@ namespace Statistics.Office
             {
                 try
                 {
-                    bool checkSta;
-                    MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, position, out checkSta);
+                    MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, position);
                     _excelRge.FormulaLocal = wValue;
                     success = true;
                     return;
@@ -235,15 +225,14 @@ namespace Statistics.Office
             }
         }
 
-        public static void WriteImage(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position, string personPath, float PictuteWidth, float PictureHeight, out bool success)
+        public static void WriteImage(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position, string personPath, float PictuteWidth, float PictureHeight)
         {
             if (_excelDoc != null)
             {
                 try
                 {
-                    bool checkSta;
                     MSExcel.Worksheet _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
-                    MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, position, out checkSta);
+                    MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, position);
                     _excelRge.Select();
 
                     if (PictuteWidth < 1 || PictureHeight < 1)
@@ -258,20 +247,17 @@ namespace Statistics.Office
                         _excelSht.Shapes.AddPicture(personPath, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue, PicLeft, PicTop, PictuteWidth, PictureHeight);
                     }
 
-                    success = checkSta;
                     return;
                 }
                 catch (Exception ex)
                 {
-                    success = false;
-                    Log.LogHelper.AddLog(@"异常30", ex.Message, true);
-                    Log.LogHelper.AddLog(@"异常31", "  " + ex.TargetSite.ToString(), true);
+                    Log.LogHelper.AddLog(@"异常130", ex.Message, true);
+                    Log.LogHelper.AddLog(@"异常131", "  " + ex.TargetSite.ToString(), true);
                     return;
                 }
             }
             else
             {
-                success = false;
                 Log.LogHelper.AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
                 return;
             }

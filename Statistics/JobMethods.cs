@@ -13,8 +13,10 @@ using Statistics.Criterion.Dose;
 using Statistics.DataUtility;
 using Statistics.Instrument.Standard;
 using Statistics.Instrument.Tested;
-using Statistics.Log;
 using Statistics.IO;
+using Statistics.Log;
+using Statistics.ProjectModel;
+using Statistics.Office.Excel;
 
 namespace Statistics
 {
@@ -284,7 +286,7 @@ namespace Statistics
                 path = Path.Combine(pathBase, item);
                 if (!Directory.Exists(path))
                 {
-                    AddException("无法识别的仪器类型：" + item, true);
+                    LogHelper.AddException("无法识别的仪器类型：" + item, true);
                     checkClear = false;
                     return null;
                 }
@@ -351,10 +353,10 @@ namespace Statistics
 
             string temp;
             string text = "";
-            string certId = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, "L2", out success1);
+            string certId = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition("L2"));
             if (!success1)
             {
-                AddException(@"无法提取到证书编号", true);
+                LogHelper.AddException(@"无法提取到证书编号", true);
                 success = false;
                 newSheetIndex = -1;
                 return;
@@ -373,11 +375,11 @@ namespace Statistics
                 }
                 else if (item.Name.Contains(@"标准模板"))
                 {
-                    AddDataError(@"第" + item.Index + "页发现多余的标准模板", true);
+                    LogHelper.AddDataError(@"第" + item.Index + "页发现多余的标准模板", true);
                 }
                 else
                 {
-                    temp = destiEx.GetText(destiEx.ExcelWorkbook, item.Index, "L2", out checkClear).Trim();
+                    temp = destiEx.GetText(destiEx.ExcelWorkbook, item.Index, new ExcelPosition("L2"));
                     if (temp.StartsWith(@"20") && (temp.Length == 9 || temp.Length == 10))
                     {
                         //找到有证书编号的数据页
@@ -389,7 +391,7 @@ namespace Statistics
                             }
                             else
                             {
-                                AddException(@"要合并入的数据已存在于第" + item.Index + "页", true);
+                                LogHelper.AddException(@"要合并入的数据已存在于第" + item.Index + "页", true);
                                 newSheetIndex = -1;
                                 success = false;
                                 return;
@@ -407,7 +409,7 @@ namespace Statistics
             {
                 if (templateIndex == -1)
                 {
-                    AddException(@"找不到数据的标准模板", true);
+                    LogHelper.AddException(@"找不到数据的标准模板", true);
                     success = false;
                     newSheetIndex = -1;
                     return;
@@ -454,7 +456,7 @@ namespace Statistics
                         }
                         if (!ws1.Name.Contains(@"标准模板"))
                         {
-                            AddException(@"标准模板复制出错", true);
+                            LogHelper.AddException(@"标准模板复制出错", true);
                             success = false;
                             newSheetIndex = -1;
                             return;
@@ -470,13 +472,13 @@ namespace Statistics
                     //确定原始数据的数据行
                     for (int i = 15; i < 22; i++)
                     {
-                        text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, i, 3, out checkClear).Trim();
+                        text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(i, 3));
                         if (text == "1")
                         {
-                            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, i + 1, 3, out checkClear).Trim();
+                            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(i + 1, 3));
                             if (text == "2")
                             {
-                                text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, i + 2, 3, out checkClear).Trim();
+                                text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(i + 2, 3));
                                 if (text == "3")
                                 {
                                     startSourceRowIndex = i;
@@ -488,7 +490,7 @@ namespace Statistics
 
                     if (startSourceRowIndex == -1)
                     {
-                        AddException(@"找不到原始数据所在的行", true);
+                        LogHelper.AddException(@"找不到原始数据所在的行", true);
                         success = false;
                         newSheetIndex = -1;
                         return;
@@ -496,21 +498,21 @@ namespace Statistics
 
                     //拷贝数据
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 2, 12, "@", out checkClear);
-                    if (!checkClear) AddException(@"《证书编号》数据复制错误", true);
+                    if (!checkClear) LogHelper.AddException(@"《证书编号》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 4, 1, 4, 2, new string[] { @"送校单位：", @"单位名称：" }, "@", out checkClear);
-                    if (!checkClear) AddException(@"《送校单位》数据复制错误", true);
+                    if (!checkClear) LogHelper.AddException(@"《送校单位》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 4, 5, 4, 6, @"联系地址：", "@", out checkClear);
                     //if (!checkClear) AddException(@"《联系地址》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 5, 1, 5, 2, @"仪器名称：", "@", out checkClear);
-                    if (!checkClear) AddException(@"《仪器名称》数据复制错误", true);
+                    if (!checkClear) LogHelper.AddException(@"《仪器名称》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 5, 5, 5, 6, @"型号：", "@", out checkClear);
-                    if (!checkClear) AddException(@"《型号》数据复制错误", true);
+                    if (!checkClear) LogHelper.AddException(@"《型号》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 5, 7, 5, 8, new string[] { @"主机编号：", @"编号：" }, "@", out checkClear);
-                    if (!checkClear) AddException(@"《主机编号》数据复制错误", true);
+                    if (!checkClear) LogHelper.AddException(@"《主机编号》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 5, 9, 5, 10, @"厂家：", "@", out checkClear);
-                    if (!checkClear) AddException(@"《厂家》数据复制错误", true);
+                    if (!checkClear) LogHelper.AddException(@"《厂家》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 5, 11, 5, 12, new string[] { @"探测器编号：", "电离室号：", "探测器号：" }, "@", out checkClear);
-                    if (!checkClear) AddException(@"《探测器编号》数据复制错误", true);
+                    if (!checkClear) LogHelper.AddException(@"《探测器编号》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 31, 7, "", out checkClear);
                     //if (!checkClear) AddException(@"《记录者》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 31, 9, "", out checkClear);
@@ -518,11 +520,11 @@ namespace Statistics
                     CopyDate(sourceEx, sourceIndex, destiEx, ws1.Index, out checkClear);
 
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 7, 11, "0.000", out checkClear);
-                    if (needFix && !checkClear) AddException(@"《温度》数据复制错误", true);
+                    if (needFix && !checkClear) LogHelper.AddException(@"《温度》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 7, 13, "0.0%", out checkClear);
-                    if (needFix && !checkClear) AddException(@"《湿度》数据复制错误", true);
+                    if (needFix && !checkClear) LogHelper.AddException(@"《湿度》数据复制错误", true);
                     CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 8, 10, "", out checkClear);
-                    if (needFix && !checkClear) AddException(@"《气压》数据复制错误", true);
+                    if (needFix && !checkClear) LogHelper.AddException(@"《气压》数据复制错误", true);
 
                     rr = destiEx.GetRange(destiEx.ExcelWorkbook, ws1.Index, "M8", out checkClear);
                     if (needFix)
@@ -547,7 +549,7 @@ namespace Statistics
                         }
                     }
 
-                    ArrayList dataStructList = new ArrayList();
+                    List<DataStruct> dataStructList = new List<DataStruct>();
                     DataStruct dataStruct;
                     int standardRowIndex = -1;
                     string keyword = "标准";
@@ -559,7 +561,9 @@ namespace Statistics
                     }
                     for (int p = 13; p < 18; p++)
                     {
-                        text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, p, 1, out checkClear).Trim() + sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, p, 2, out checkClear).Trim() + sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, p, 3, out checkClear).Trim();
+                        text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(p, 1))
+                            + sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(p, 2)) 
+                            + sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(p, 3));
                         if (text.ToLower().Contains(keyword))
                         {
                             standardRowIndex = p;
@@ -573,24 +577,24 @@ namespace Statistics
                             //Dose
                             CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 27, 13, "@", out checkClear);
                             CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 12, 4, "", out checkClear);
-                            if (!checkClear) AddException(@"《量程》数据复制错误", true);
+                            if (!checkClear) LogHelper.AddException(@"《量程》数据复制错误", true);
 
-                            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, 12, 4, out checkClear).Trim();
+                            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(12, 4));
                             dataStructList.Add(CopyThreeDoseData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 4, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear));
                             dataStructList.Add(CopyThreeDoseData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 6, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear));
                             dataStructList.Add(CopyThreeDoseData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 8, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear));
                             dataStructList.Add(CopyThreeDoseData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 10, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear));
                             dataStructList.Add(CopyThreeDoseData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 12, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear));
 
-                            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, 12, 12, out checkClear).Trim();
+                            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(12, 12));
                             if (text.StartsWith("单位"))
                             {
                                 CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 12, 13, "", out checkClear);
-                                if (!checkClear) AddException(@"《单位》数据复制错误", true);
+                                if (!checkClear) LogHelper.AddException(@"《单位》数据复制错误", true);
                             }
                             else
                             {
-                                dataStruct = DataStruct.CalDataRange(dataStructList, sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, 12, 4, out checkClear).Trim(), pattern, out success);
+                                dataStruct = DataStruct.CalDataRange(dataStructList, sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(12, 4)), pattern, out success);
                                 switch (dataStruct.DataRanges)
                                 {
                                     case DataRange.cGy:
@@ -609,7 +613,7 @@ namespace Statistics
                                         destiEx.WriteValue(destiEx.ExcelWorkbook, ws1.Index, 12, 13, "μGy", out checkClear);
                                         break;
                                     case DataRange.Unknown:
-                                        AddException("无法判断数据单位", true);
+                                        LogHelper.AddException("无法判断数据单位", true);
                                         break;
                                 }
                                 switch (dataStruct.Distance)
@@ -621,7 +625,7 @@ namespace Statistics
                                         destiEx.WriteValue(destiEx.ExcelWorkbook, ws1.Index, 6, 13, "1.5m", out checkClear);
                                         break;
                                     case Distance.Unknown:
-                                        AddException("无法获取标准值，判断测试距离", true);
+                                        LogHelper.AddException("无法获取标准值，判断测试距离", true);
                                         break;
                                 }
                             }
@@ -631,24 +635,24 @@ namespace Statistics
                             //CT
                             CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 27, 13, "@", out checkClear);
                             CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 12, 4, "", out checkClear);
-                            if (!checkClear) AddException(@"《量程》数据复制错误", true);
+                            if (!checkClear) LogHelper.AddException(@"《量程》数据复制错误", true);
 
-                            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, 12, 4, out checkClear).Trim();
+                            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(12, 4));
                             dataStructList.Add(CopyThreeCTData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 4, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear));
                             dataStructList.Add(CopyThreeCTData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 6, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear));
                             dataStructList.Add(CopyThreeCTData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 8, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear));
                             dataStructList.Add(CopyThreeCTData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 10, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear));
                             dataStructList.Add(CopyThreeCTData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 12, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear));
 
-                            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, 12, 12, out checkClear).Trim();
+                            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(12, 12));
                             if (text.StartsWith("单位"))
                             {
                                 CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 12, 13, "", out checkClear);
-                                if (!checkClear) AddException(@"《单位》数据复制错误", true);
+                                if (!checkClear) LogHelper.AddException(@"《单位》数据复制错误", true);
                             }
                             else
                             {
-                                dataStruct = DataStruct.CalDataRange(dataStructList, sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, 12, 4, out checkClear).Trim(), pattern, out success);
+                                dataStruct = DataStruct.CalDataRange(dataStructList, sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(12, 4)), pattern, out success);
                                 switch (dataStruct.DataRanges)
                                 {
                                     case DataRange.mGycm:
@@ -676,7 +680,7 @@ namespace Statistics
                                         destiEx.WriteValue(destiEx.ExcelWorkbook, ws1.Index, 12, 13, "Rcm", out checkClear);
                                         break;
                                     case DataRange.Unknown:
-                                        AddException("无法判断数据单位", true);
+                                        LogHelper.AddException("无法判断数据单位", true);
                                         break;
                                 }
                                 switch (dataStruct.Distance)
@@ -688,7 +692,7 @@ namespace Statistics
                                         destiEx.WriteValue(destiEx.ExcelWorkbook, ws1.Index, 6, 13, "1.5m", out checkClear);
                                         break;
                                     case Distance.Unknown:
-                                        AddException("无法获取标准值，判断测试距离", true);
+                                        LogHelper.AddException("无法获取标准值，判断测试距离", true);
                                         break;
                                 }
                             }
@@ -699,9 +703,9 @@ namespace Statistics
                             CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 28, 13, "@", out checkClear);
                             //if (!checkClear) AddException(@"《备注》数据复制错误", true);
                             CopyOneData(sourceEx, sourceIndex, destiEx, ws1.Index, 12, 4, @"/", "", out checkClear);
-                            if (!checkClear) AddException(@"《量程》数据复制错误", true);
+                            if (!checkClear) LogHelper.AddException(@"《量程》数据复制错误", true);
 
-                            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, 12, 4, out checkClear).Trim();
+                            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(12, 4));
                             CopyThreeKVData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 4, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear);
                             CopyThreeKVData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 6, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear);
                             CopyThreeKVData(sourceEx, sourceIndex, destiEx, ws1.Index, startSourceRowIndex, 8, startDestiRowIndex, "", standardRowIndex, text, pattern, out checkClear);
@@ -767,7 +771,7 @@ namespace Statistics
         public static void CopyOneData(ExcelUtility sourceEx, int sourceIndex, ExcelUtility destiEx, int destiIndex, int rowIndex, int columnIndex, string style, out bool sc)
         {
             bool checkClear;
-            string text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, rowIndex, columnIndex, out checkClear).Trim();
+            string text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(rowIndex, columnIndex));
             if (text == "")
             {
                 sc = false;
@@ -795,7 +799,7 @@ namespace Statistics
         {
             bool checkClear;
             double temp_double = 0.0;
-            string text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, rowIndex, columnIndex, out checkClear).Trim();
+            string text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(rowIndex, columnIndex));
             bool isDouble = double.TryParse(text, out temp_double);
             if (text == "" || !isDouble)
             {
@@ -824,7 +828,7 @@ namespace Statistics
         public static void CopyOneData(ExcelUtility sourceEx, int sourceIndex, ExcelUtility destiEx, int destiIndex, int rowIndex, int columnIndex, string defaultValue, string style, out bool sc)
         {
             bool checkClear;
-            string text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, rowIndex, columnIndex, out checkClear).Trim();
+            string text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(rowIndex, columnIndex));
             if (text == "")
             {
                 sourceEx.WriteValue(sourceEx.ExcelWorkbook, sourceIndex, rowIndex, columnIndex, defaultValue, out checkClear);
@@ -947,13 +951,13 @@ namespace Statistics
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, out checkClear);
+                    rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex));
                     if (rr.Value2 == null || string.IsNullOrWhiteSpace(rr.Value2.ToString()))
                     {
                         sourceEx.WriteValue(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, @"/", out checkClear);
                         sourceEx.ExcelWorkbook.Save();
                         sourceEx.ExcelWorkbook.Saved = true;
-                        text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, out checkClear).Trim();
+                        text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex));
                     }
                     else
                     {
@@ -966,7 +970,7 @@ namespace Statistics
                     }
                     else
                     {
-                        AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
+                        LogHelper.AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
                         sc = false;
                     }
                 }
@@ -975,13 +979,13 @@ namespace Statistics
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, out checkClear);
+                    rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex));
                     if (rr.Value2 == null || string.IsNullOrWhiteSpace(rr.Value2.ToString()))
                     {
                         sourceEx.WriteValue(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, @"/", out checkClear);
                         sourceEx.ExcelWorkbook.Save();
                         sourceEx.ExcelWorkbook.Saved = true;
-                        text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, out checkClear).Trim();
+                        text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex));
                     }
                     else
                     {
@@ -994,7 +998,7 @@ namespace Statistics
                     }
                     else
                     {
-                        AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
+                        LogHelper.AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
                         sc = false;
                     }
                 }
@@ -1024,17 +1028,17 @@ namespace Statistics
             //}
 
             //规范
-            rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, DataUtility.DataUtility.PositionString(13, columnIndex), out checkClear);
+            rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(13, columnIndex));
             text = rr.Text.ToString().Trim();
-            rr = destiEx.GetRange(destiEx.ExcelWorkbook, destiIndex, DataUtility.DataUtility.PositionString(13, columnIndex), DataUtility.DataUtility.PositionString(13, columnIndex + 1), out checkClear);
+            rr = destiEx.GetRange(destiEx.ExcelWorkbook, destiIndex, new ExcelPosition(13, columnIndex), new ExcelPosition(13, columnIndex + 1));
             rr.Value2 = text;
 
             //标准值
             if (standardRowIndex > 12)
             {
-                rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, DataUtility.DataUtility.PositionString(standardRowIndex, columnIndex), out checkClear);
+                rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(standardRowIndex, columnIndex));
                 text = rr.Text.ToString().Trim();
-                rr = destiEx.GetRange(destiEx.ExcelWorkbook, destiIndex, DataUtility.DataUtility.PositionString(16, columnIndex), DataUtility.DataUtility.PositionString(16, columnIndex + 1), out checkClear);
+                rr = destiEx.GetRange(destiEx.ExcelWorkbook, destiIndex, new ExcelPosition(16, columnIndex), new ExcelPosition(16, columnIndex + 1));
                 rr.Value2 = text;
                 if (double.TryParse(text, out temp_double))
                 {
@@ -1051,13 +1055,13 @@ namespace Statistics
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, out checkClear);
+                    rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex));
                     if (rr.Value2 == null || string.IsNullOrWhiteSpace(rr.Value2.ToString()))
                     {
-                        sourceEx.WriteValue(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, @"/", out checkClear);
+                        sourceEx.WriteValue(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex), @"/");
                         sourceEx.ExcelWorkbook.Save();
                         sourceEx.ExcelWorkbook.Saved = true;
-                        text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, out checkClear).Trim();
+                        text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex));
                     }
                     else
                     {
@@ -1075,7 +1079,7 @@ namespace Statistics
                     }
                     else
                     {
-                        AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
+                        LogHelper.AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
                         sc = false;
                     }
                 }
@@ -1095,13 +1099,13 @@ namespace Statistics
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, out checkClear);
+                    rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex));
                     if (rr.Value2 == null || string.IsNullOrWhiteSpace(rr.Value2.ToString()))
                     {
-                        sourceEx.WriteValue(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, @"/", out checkClear);
+                        sourceEx.WriteValue(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex), @"/");
                         sourceEx.ExcelWorkbook.Save();
                         sourceEx.ExcelWorkbook.Saved = true;
-                        text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, out checkClear).Trim();
+                        text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex));
                     }
                     else
                     {
@@ -1119,7 +1123,7 @@ namespace Statistics
                     }
                     else
                     {
-                        AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
+                        LogHelper.AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
                         sc = false;
                     }
                 }
@@ -1156,10 +1160,10 @@ namespace Statistics
                 if (sourceEx.GetCriterion(sourceEx.ExcelWorkbook, sourceIndex, columnIndex, true, out text, out dataCri))
                 {
                     //规范
-                    rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, DataUtility.DataUtility.PositionString(13, columnIndex), out checkClear);
+                    rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(13, columnIndex));
                     text = rr.Text.ToString().Trim();
                     //rr = destiEx.GetRange(destiEx.ExcelWorkbook, destiIndex, DataUtility.DataUtility.PositionString(13, sourceEx.GetColumnByCriterion(dataCri, 2)), DataUtility.DataUtility.PositionString(13, sourceEx.GetColumnByCriterion(dataCri, 2) + 1), out checkClear);
-                    rr = destiEx.GetRange(destiEx.ExcelWorkbook, destiIndex, DataUtility.DataUtility.PositionString(13, columnIndex), DataUtility.DataUtility.PositionString(13, columnIndex + 1), out checkClear);
+                    rr = destiEx.GetRange(destiEx.ExcelWorkbook, destiIndex, new ExcelPosition(13, columnIndex), new ExcelPosition(13, columnIndex + 1));
                     rr.Value2 = text;
                     //电压写入14行
                     destiEx.WriteValue(destiEx.ExcelWorkbook, destiIndex, 14, columnIndex, dataCri.Voltage, out checkClear);
@@ -1169,10 +1173,10 @@ namespace Statistics
                     //标准值
                     if (standardRowIndex > 12)
                     {
-                        rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, DataUtility.DataUtility.PositionString(standardRowIndex, columnIndex), out checkClear);
+                        rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(standardRowIndex, columnIndex));
                         text = rr.Text.ToString().Trim();
                         //rr = destiEx.GetRange(destiEx.ExcelWorkbook, destiIndex, DataUtility.DataUtility.PositionString(16, sourceEx.GetColumnByCriterion(dataCri, 2)), DataUtility.DataUtility.PositionString(16, sourceEx.GetColumnByCriterion(dataCri, 2) + 1), out checkClear);
-                        rr = destiEx.GetRange(destiEx.ExcelWorkbook, destiIndex, DataUtility.DataUtility.PositionString(16, columnIndex), DataUtility.DataUtility.PositionString(16, columnIndex + 1), out checkClear);
+                        rr = destiEx.GetRange(destiEx.ExcelWorkbook, destiIndex, new ExcelPosition(16, columnIndex), new ExcelPosition(16, columnIndex + 1));
                         rr.Value2 = text;
                         if (double.TryParse(text, out temp_double))
                         {
@@ -1188,13 +1192,13 @@ namespace Statistics
                     {
                         for (int i = 0; i < 3; i++)
                         {
-                            rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, out checkClear);
+                            rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex));
                             if (rr.Value2 == null || string.IsNullOrWhiteSpace(rr.Value2.ToString()))
                             {
-                                sourceEx.WriteValue(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, @"/", out checkClear);
+                                sourceEx.WriteValue(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex), @"/");
                                 sourceEx.ExcelWorkbook.Save();
                                 sourceEx.ExcelWorkbook.Saved = true;
-                                text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, out checkClear).Trim();
+                                text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex));
                             }
                             else
                             {
@@ -1214,7 +1218,7 @@ namespace Statistics
                             }
                             else
                             {
-                                AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
+                                LogHelper.AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
                                 sc = false;
                             }
                         }
@@ -1229,13 +1233,13 @@ namespace Statistics
                     {
                         for (int i = 0; i < 3; i++)
                         {
-                            rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, out checkClear);
+                            rr = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex));
                             if (rr.Value2 == null || string.IsNullOrWhiteSpace(rr.Value2.ToString()))
                             {
-                                sourceEx.WriteValue(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, @"/", out checkClear);
+                                sourceEx.WriteValue(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex), @"/");
                                 sourceEx.ExcelWorkbook.Save();
                                 sourceEx.ExcelWorkbook.Saved = true;
-                                text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, startSourceRowIndex + i, columnIndex, out checkClear).Trim();
+                                text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + i, columnIndex));
                             }
                             else
                             {
@@ -1255,7 +1259,7 @@ namespace Statistics
                             }
                             else
                             {
-                                AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
+                                LogHelper.AddException(@"第" + columnIndex + "列第" + (startSourceRowIndex + i).ToString() + "行不包含有效数据", true);
                                 sc = false;
                             }
                         }
@@ -1269,7 +1273,7 @@ namespace Statistics
                 }
                 else
                 {
-                    AddException("规范内容有误：" + text, true);
+                    LogHelper.AddException("规范内容有误：" + text, true);
                 }
             }
             sc = false;
@@ -1293,8 +1297,8 @@ namespace Statistics
                 return true;
             }
             bool checkClear;
-            string tt1 = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, "M8", out checkClear);
-            string tt2 = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, "L8", out checkClear);
+            string tt1 = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition("M8"));
+            string tt2 = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition("L8"));
             MSExcel.Range rr1 = sourceEx.GetRange(sourceEx.ExcelWorkbook, sourceIndex, "L8", out checkClear);
             double temp_double;
             bool isDouble = double.TryParse(tt2, out temp_double);
@@ -1324,7 +1328,7 @@ namespace Statistics
             }
             else
             {
-                AddException("无法判断电离室与半导体类型", true);
+                LogHelper.AddException("无法判断电离室与半导体类型", true);
                 needFix = false;
                 shouldFix = true;
                 return false;
@@ -1343,8 +1347,7 @@ namespace Statistics
             Flag a, b, c;
             bool conti = false;
             double dig;
-            bool checkClear;
-            string text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, DataUtility.DataUtility.PositionString(startSourceRowIndex, columnIndex), out checkClear).Trim();
+            string text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex, columnIndex));
             bool isDouble = double.TryParse(text, out dig);
             if (text == "/")
             {
@@ -1358,7 +1361,7 @@ namespace Statistics
             {
                 a = Flag.Neg;
             }
-            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, DataUtility.DataUtility.PositionString(startSourceRowIndex + 1, columnIndex), out checkClear).Trim();
+            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + 1, columnIndex));
             isDouble = double.TryParse(text, out dig);
             if (text == "/")
             {
@@ -1372,7 +1375,7 @@ namespace Statistics
             {
                 b = Flag.Neg;
             }
-            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, DataUtility.DataUtility.PositionString(startSourceRowIndex + 2, columnIndex), out checkClear).Trim();
+            text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(startSourceRowIndex + 2, columnIndex));
             isDouble = double.TryParse(text, out dig);
             if (text == "/")
             {
@@ -1396,7 +1399,7 @@ namespace Statistics
                 conti = false;
                 if (((int)a + (int)b + (int)c + (int)a * (int)b * (int)c == 0) && !(a == Flag.Zero && b == Flag.Zero && c == Flag.Zero))
                 {
-                    AddException("数据记录有未识别的数据", true);
+                    LogHelper.AddException("数据记录有未识别的数据", true);
                 }
             }
             return conti;
@@ -1405,15 +1408,13 @@ namespace Statistics
         public static void CopyDate(ExcelUtility sourceEx, int sourceIndex, ExcelUtility destiEx, int destiIndex, out bool sc)
         {
             bool checkClear;
-            string text1, text2, text3, text4;
             string text = "";
             for (int i = 33; i > 26; i--)
             {
-                text1 = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, i, 10, out checkClear).Trim();
-                text2 = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, i, 11, out checkClear).Trim();
-                text3 = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, i, 12, out checkClear).Trim();
-                text4 = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, i, 13, out checkClear).Trim();
-                text = text1 + text2 + text3 + text4;
+                text = sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(i, 10))
+                    + sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(i, 11))
+                    + sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(i, 12))
+                    + sourceEx.GetText(sourceEx.ExcelWorkbook, sourceIndex, new ExcelPosition(i, 13));
                 if (text != "")
                 {
                     break;
@@ -1423,7 +1424,7 @@ namespace Statistics
             if (text == "")
             {
                 sc = false;
-                AddException(@"《日期》数据复制错误：" + text, true);
+                LogHelper.AddException(@"《日期》数据复制错误：" + text, true);
                 return;
             }
             else
@@ -1901,8 +1902,8 @@ namespace Statistics
             }
             if (DoNotHave)
             {
-                AddException(@"仪器类型可能出现手误", true);
-                AddLog("错误47", "  仪器类型：" + str, true);
+                LogHelper.AddException(@"仪器类型可能出现手误", true);
+                LogHelper.AddLog("错误47", "  仪器类型：" + str, true);
             }
         }
         /// <summary>
@@ -1922,13 +1923,13 @@ namespace Statistics
                 WordUtility wu = new WordUtility(wordPath, out success);
                 if (!success)
                 {
-                    AddException("Word文档打开失败", true);
+                    LogHelper.AddException("Word文档打开失败", true);
                     return;
                 }
-                string stemp1 = excel.GetText(excel.ExcelWorkbook, sourceIndex, "L2", out success);
+                string stemp1 = excel.GetText(excel.ExcelWorkbook, sourceIndex, new ExcelPosition("L2"));
                 object otemp1;
                 string wdName = "DYjl" + stemp1 + Path.GetExtension(wordPath);
-                string pdfName = "DYjl" + stemp1 + "_" + excel.GetText(excel.ExcelWorkbook, sourceIndex, "B4", out success) + ".pdf";
+                string pdfName = "DYjl" + stemp1 + "_" + excel.GetText(excel.ExcelWorkbook, sourceIndex, new ExcelPosition("B4")) + ".pdf";
 
                 switch (pattern)
                 {

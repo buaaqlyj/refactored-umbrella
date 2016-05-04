@@ -15,6 +15,7 @@ using System.Reflection;
 using MSExcel = Microsoft.Office.Interop.Excel;
 using MSWord = Microsoft.Office.Interop.Word;
 
+using Statistics.Configuration;
 using Statistics.Criterion.KV;
 using Statistics.Criterion.Dose;
 using Statistics.DataUtility;
@@ -22,6 +23,7 @@ using Statistics.Instrument.Standard;
 using Statistics.Instrument.Tested;
 using Statistics.Log;
 using Statistics.IO;
+using Statistics.Office.Excel;
 
 namespace Statistics
 {
@@ -84,63 +86,22 @@ namespace Statistics
             InitializeComponent();
         }
         
-        #region Log
-
-        public void Log_Write(string log)
+        #region Control Operator
+        public void AddLogToTextBox(string ex)
         {
-            if (logFile != null)
-            {
-                logFile.WriteLine(log);
-                logFile.Flush();
-            }
-        }
-
-        public void AddLog(string pre, string ex, bool sw)
-        {
-            string temp = @"【" + pre + @"】" + ex;
-            if (sw)
-            {
-                Log_Write(temp);
-            }
-            TextBox_Write(temp + Environment.NewLine);
-        }
-
-        public void AddLog(string ex, bool sw)
-        {
-            if (sw)
-            {
-                Log_Write(ex);
-            }
             TextBox_Write(ex + Environment.NewLine);
         }
 
+        public void UpdateProgressDisplay(double value)
+        {
+            ProgressBar_SetValue(Math.Max((int)0, (int)Math.Min((int)100, (int)Math.Ceiling(value))));
+            Label_DisplayProgress(value);
+        }
         #endregion
 
         #region Invoke&Delegate&Event
-
-        delegate void AddDataErrorInvoke(string ex, bool log)
-        public void AddDataError(string ex, bool log)
-        {
-            dataerrorNum++;
-            if (exceptionNum + dataerrorNum == 1)
-            {
-                AddLog(@"信息18", "原文件名：" + currentFile, true);
-            }
-            AddLog(@"错误19", "  第" + dataerrorNum + "个数据错误：" + ex, log);
-        }
-
-        public void AddException(string ex, bool log)
-        {
-            exceptionNum++;
-            if (exceptionNum + dataerrorNum == 1)
-            {
-                AddLog(@"信息20", "原文件名：" + currentFile, true);
-            }
-            AddLog(@"错误01", "  第" + exceptionNum + "个格式错误：" + ex, log);
-        }
-
         delegate void SignitureWriteInvoke(Bitmap sig);
-        public void Signitue_Write(Bitmap sig)
+        private void Signitue_Write(Bitmap sig)
         {
             if (pictureBox1.InvokeRequired)
             {
@@ -155,7 +116,7 @@ namespace Statistics
         }
 
         delegate void TextBoxWriteInvoke(string str);
-        public void TextBox_Write(string log)
+        private void TextBox_Write(string log)
         {
             if (textBox2.InvokeRequired)
             {
@@ -171,7 +132,7 @@ namespace Statistics
 
         delegate void ProgressBarSetValueInvoke(double value);
         delegate void LabelDisplayProgressInvoke(double value);
-        public void ProgressBar_SetValue(double value)
+        private void ProgressBar_SetValue(double value)
         {
             if (progressBar1.InvokeRequired)
             {
@@ -183,7 +144,7 @@ namespace Statistics
                 progressBar1.Value = (int)Math.Ceiling(value);
             }
         }
-        public void Label_DisplayProgress(double value)
+        private void Label_DisplayProgress(double value)
         {
             if (label5.InvokeRequired)
             {
@@ -194,11 +155,6 @@ namespace Statistics
             {
                 label5.Text = value.ToString(@"0.00") + @" %";
             }
-        }
-        public void UpdateProgress(double value)
-        {
-            ProgressBar_SetValue(Math.Max((int)0, (int)Math.Min((int)100, (int)Math.Ceiling(value))));
-            Label_DisplayProgress(value);
         }
 
         delegate void ButtonSetTextInvoke(string text);
@@ -657,46 +613,10 @@ namespace Statistics
             {
                 di.Create();
             }
-            logFile = new StreamWriter(Application.StartupPath + @"\日志\" + DateTime.Now.ToString(@"yyyyMMdd-HH-mm-ss") + @".txt");
-            //LogHelper.Init();
-
-            ExcelUtility.lfwi += new ExcelUtility.LogFileWriteInvoke(this.Log_Write);
-            ExcelUtility.tbwi += new ExcelUtility.TextBoxWriteInvoke(this.TextBox_Write);
-            ExcelUtility.aed += new ExcelUtility.AddExceptionDelegate(this.AddException);
-            ExcelUtility.aded += new ExcelUtility.AddDataErrorDelegate(this.AddDataError);
-
-            WordUtility.lfwi += new WordUtility.LogFileWriteInvoke(this.Log_Write);
-            WordUtility.tbwi += new WordUtility.TextBoxWriteInvoke(this.TextBox_Write);
-            WordUtility.aed += new WordUtility.AddExceptionDelegate(this.AddException);
-            WordUtility.aded += new WordUtility.AddDataErrorDelegate(this.AddDataError);
-
-            DataUtility.DataUtility.lfwi += new DataUtility.DataUtility.LogFileWriteInvoke(this.Log_Write);
-            DataUtility.DataUtility.tbwi += new DataUtility.DataUtility.TextBoxWriteInvoke(this.TextBox_Write);
-            DataUtility.DataUtility.aed += new DataUtility.DataUtility.AddExceptionDelegate(this.AddException);
-            DataUtility.DataUtility.aded += new DataUtility.DataUtility.AddDataErrorDelegate(this.AddDataError);
-
-            //DataUtility.DataUtility.TryCreatFolder(Application.StartupPath + @"\日志");
-            DataUtility.DataUtility.TryCreatFolder(Application.StartupPath + @"\试验证书模板");
-            DataUtility.DataUtility.TryCreatFolders(Application.StartupPath + @"\试验证书模板", new string[] { "CT", "剂量", "KV" });
-            DataUtility.DataUtility.TryCreatFolder(Application.StartupPath + @"\试验记录模板");
-            DataUtility.DataUtility.TryCreatFolders(Application.StartupPath + @"\试验记录模板", new string[] { "CT", "剂量", "KV" });
-            DataUtility.DataUtility.TryCreatFolder(Application.StartupPath + @"\证书下载");
-            DataUtility.DataUtility.TryCreatFolder(Application.StartupPath + @"\证书记录");
-            DataUtility.DataUtility.TryCreatFolder(Application.StartupPath + @"\当前实验记录");
-            DataUtility.DataUtility.TryCreatFolders(Application.StartupPath + @"\当前实验记录", new string[] { "CT", "剂量", "KV" });
-            DataUtility.DataUtility.TryCreatFolder(Application.StartupPath + @"\PDF数据记录");
-            DataUtility.DataUtility.TryCreatFolder(Application.StartupPath + @"\历史数据记录");
-            DataUtility.DataUtility.TryCreatFolders(Application.StartupPath + @"\历史数据记录", new string[] { "CT", "剂量", "KV" });
-            DataUtility.DataUtility.TryCreatFolder(Application.StartupPath + @"\输出文件夹");
-
-            TestedInstrument.InitialTypes(Application.StartupPath);
-            DataUtility.DataUtility.TryCreatFolders(Application.StartupPath + @"\历史数据记录\CT", TestedInstrument.CTTypes);
-            DataUtility.DataUtility.TryCreatFolders(Application.StartupPath + @"\历史数据记录\KV", TestedInstrument.KVTypes);
-            DataUtility.DataUtility.TryCreatFolders(Application.StartupPath + @"\历史数据记录\剂量", TestedInstrument.DoseTypes);
-            //DataUtility.DataUtility.TryCreatFolders(Application.StartupPath + @"\当前实验记录\剂量", existType);
-            //DataUtility.DataUtility.TryCreatFolders(Application.StartupPath + @"\当前实验记录\CT", existType);
-            //DataUtility.DataUtility.TryCreatFolders(Application.StartupPath + @"\当前实验记录\KV", existType);
-            //comboBox2.SelectedIndex = 0;
+            LogHelper.Initial(Application.StartupPath + @"\日志\" + DateTime.Now.ToString(@"yyyyMMdd-HH-mm-ss") + @".txt");
+            LogHelper.AddLogEvent += new LogHelper.AddLogHandler(AddLogToTextBox);
+            LogHelper.UpdateProgressEvent += new LogHelper.UpdateProgressHandler(UpdateProgressDisplay);
+            LogHelper.UpdateFileNameDisplayEvent += new LogHelper.UpdateFileNameDisplayHandler(ToolStripStatusLabel_SetText);
 
             SuperDog.SuperDogSeries myDog = new SuperDog.SuperDogSeries();
             myDog.RunDogTesting();
@@ -717,39 +637,7 @@ namespace Statistics
                 person = SuperDog.SuperDogAlpha.getInstance().Person;
             }
 
-            FileInfo fi = new FileInfo(Application.StartupPath + @"\ExpiredDate.ini");
-            if (fi.Exists)
-            {
-                string[] sections = INI.INIGetAllSectionNames(fi.FullName);
-                string[] keys = null;
-                List<string> instrument = new List<string>();
-                int tempInt;
-                foreach (string item in sections)
-                {
-                    if (Int32.TryParse(item, out tempInt))
-                    {
-                        standard.Add(item, new StandardInstrument(INI.INIGetStringValue(fi.FullName, item, "Name", null), INI.INIGetStringValue(fi.FullName, item, "Date", null)));
-                    }
-                    else
-                    {
-                        keys = INI.INIGetAllItemKeys(fi.FullName, item);
-                        instrument = new List<string>();
-                        foreach (string item1 in keys)
-                        {
-                            instrument.Add(INI.INIGetStringValue(fi.FullName, item, item1, null));
-                        }
-                        if (standardUsage.ContainsKey(item))
-                        {
-                            standardUsage.Remove(item);
-                        }
-                        standardUsage.Add(item, instrument);
-                    }
-                }
-            }
-            else
-            {
-                AddDataError("找不到ExpiredDate.ini文件", true);
-            }
+            ProgramConfiguration.Initial(Application.StartupPath);
 
             isWorking = false;
             isStopping = false;
@@ -757,12 +645,7 @@ namespace Statistics
             dod = new doOneDelegate(StandardizeOne);
 
             textBox6.Text = Application.StartupPath + @"\输出文件夹";
-            ProgramConfiguration.CurrentExcelFolder = Application.StartupPath + @"\当前实验记录"; //textBox3
-            ProgramConfiguration.DocDownloadedFolder = Application.StartupPath + @"\证书下载"; //textBox4
-            ProgramConfiguration.ArchivedExcelFolder = Application.StartupPath + @"\历史数据记录"; //textBox5
-            ProgramConfiguration.ArchivedCertificationFolder = Application.StartupPath + @"\证书记录"; //textBox8
-            ProgramConfiguration.ArchivedPdfFolder = Application.StartupPath + @"\PDF数据记录"; //textBox9
-
+            
             comboBox1.SelectedIndex = 0;
             
             comboBox3.SelectedIndex = 0;
@@ -830,17 +713,17 @@ namespace Statistics
                             }
                             else
                             {
-                                AddLog(@"***************************************************************", true);
+                                LogHelper.AddLog(@"***************************************************************", true);
                             }
-                            AddLog(@"* 文件名称：" + inputFi, true);
-                            AddLog(@"* 异常消息：" + ex.Message, true);
-                            AddLog(@"* 异常方法：" + ex.TargetSite, true);
-                            AddLog(@"***************************************************************", true);
+                            LogHelper.AddLog(@"* 文件名称：" + inputFi, true);
+                            LogHelper.AddLog(@"* 异常消息：" + ex.Message, true);
+                            LogHelper.AddLog(@"* 异常方法：" + ex.TargetSite, true);
+                            LogHelper.AddLog(@"***************************************************************", true);
                         }
                         if (dataerrorNum > 0)
                         {
                             dataerrorNum = 0;
-                            AddLog(@"***************************************************************", true);
+                            LogHelper.AddLog(@"***************************************************************", true);
                         }
                         ToolStripStatusLabel_SetText("");
                     }
@@ -849,16 +732,16 @@ namespace Statistics
 
                     if (probfile.Count > 0)
                     {
-                        AddLog(@"结果02", "共处理文件数：1", true);
-                        AddLog(@"结果03", "异常文件总数：" + probfile.Count, true);
+                        LogHelper.AddLog(@"结果02", "共处理文件数：1", true);
+                        LogHelper.AddLog(@"结果03", "异常文件总数：" + probfile.Count, true);
                         foreach (string item in probfile)
                         {
-                            AddLog(@"结果04", item, true);
+                            LogHelper.AddLog(@"结果04", item, true);
                         }
                     }
                     else
                     {
-                        AddLog(@"结果05", "没有发现任何异常，共处理文件数：1", true);
+                        LogHelper.AddLog(@"结果05", "没有发现任何异常，共处理文件数：1", true);
                     }
                     MessageBox.Show("共处理文件" + "1" + "个。" + Environment.NewLine + "其中成功" + (1-probfile.Count).ToString() + "个，失败" + probfile.Count + "个。", "处理完成", MessageBoxButtons.OK);
                 }
@@ -893,17 +776,17 @@ namespace Statistics
                                     }
                                     else
                                     {
-                                        AddLog(@"***************************************************************", true);
+                                        LogHelper.AddLog(@"***************************************************************", true);
                                     }
-                                    AddLog(@"* 文件名称：" + item.FullName, true);
-                                    AddLog(@"* 异常消息：" + ex.Message, true);
-                                    AddLog(@"* 异常方法：" + ex.TargetSite, true);
-                                    AddLog(@"***************************************************************", true);
+                                    LogHelper.AddLog(@"* 文件名称：" + item.FullName, true);
+                                    LogHelper.AddLog(@"* 异常消息：" + ex.Message, true);
+                                    LogHelper.AddLog(@"* 异常方法：" + ex.TargetSite, true);
+                                    LogHelper.AddLog(@"***************************************************************", true);
                                 }
                                 if (dataerrorNum > 0)
                                 {
                                     dataerrorNum = 0;
-                                    AddLog(@"***************************************************************", true);
+                                    LogHelper.AddLog(@"***************************************************************", true);
                                 }
                                 ToolStripStatusLabel_SetText("");
                             }
@@ -917,15 +800,15 @@ namespace Statistics
                         }
                         if (probfile.Count > 0)
                         {
-                            AddLog(@"结果06", "异常文件总数：" + probfile.Count, true);
+                            LogHelper.AddLog(@"结果06", "异常文件总数：" + probfile.Count, true);
                             foreach (string item in probfile)
                             {
-                                AddLog(@"结果07", item, true);
+                                LogHelper.AddLog(@"结果07", item, true);
                             }
                         }
                         else
                         {
-                            AddLog(@"结果08", "没有发现任何异常，共处理文件数：" + doneNumber, true);
+                            LogHelper.AddLog(@"结果08", "没有发现任何异常，共处理文件数：" + doneNumber, true);
                         }
                         MessageBox.Show("共处理文件" + fis.Length + "个。" + Environment.NewLine + "其中成功" + (fis.Length - probfile.Count).ToString() + "个，失败" + probfile.Count + "个。", "处理完成", MessageBoxButtons.OK);
                     }
@@ -942,7 +825,7 @@ namespace Statistics
             isWorking = false;
             isStopping = false;
             Button_SetText(@"开始");
-            AddLog(Environment.NewLine + Environment.NewLine, true);
+            LogHelper.AddLog(Environment.NewLine + Environment.NewLine, true);
         }
 
         #endregion
@@ -967,7 +850,7 @@ namespace Statistics
             WordUtility _wu = new WordUtility(filePath, out success);
             if (!success)
             {
-                AddException("Word文档打开失败", true);
+                LogHelper.AddException("Word文档打开失败", true);
                 return;
             }
 
@@ -982,7 +865,7 @@ namespace Statistics
 
             if (tempSerial != "" && tempSerial != macType)
             {
-                AddDataError("证书中包含的仪器型号与指定的仪器型号不符", true);
+                LogHelper.AddDataError("证书中包含的仪器型号与指定的仪器型号不符", true);
             }
 
             string str = tempZhsh.Substring(8);
@@ -1005,13 +888,13 @@ namespace Statistics
             ExcelUtility _sr = new ExcelUtility(strSavename, out checkClear);
             if (!checkClear)
             {
-                AddException(@"Excel文档无法打开", true);
+                LogHelper.AddException(@"Excel文档无法打开", true);
                 if (_sr != null && _sr.ExcelWorkbook != null)
                 {
                     _sr.ExcelWorkbook.Saved = true;
                     _sr.TryClose();
                 }
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
                 problemFilesList.Add(filePath);
                 exceptionNum = 0;
                 dataerrorNum = 0;
@@ -1030,7 +913,7 @@ namespace Statistics
                     }
                     else if (item.Name.Contains(@"标准模板"))
                     {
-                        AddException(@"发现多余的标准模板", true);
+                        LogHelper.AddException(@"发现多余的标准模板", true);
                     }
                 }
                 if (templateIndex > -1)
@@ -1040,7 +923,7 @@ namespace Statistics
                     ws1 = (MSExcel.Worksheet)_sr.ExcelWorkbook.Sheets[templateIndex];
                     if (!ws1.Name.Contains(@"标准模板"))
                     {
-                        AddException(@"标准模板复制出错", true);
+                        LogHelper.AddException(@"标准模板复制出错", true);
                         success = false;
                         return;
                     }
@@ -1051,7 +934,7 @@ namespace Statistics
                 }
                 else
                 {
-                    AddException(@"找不到模板excel中的标准模板页", true);
+                    LogHelper.AddException(@"找不到模板excel中的标准模板页", true);
                 }
 
                 _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 4, 2, tempName, out success);
@@ -1081,7 +964,7 @@ namespace Statistics
             }
             catch (Exception ex)
             {
-                AddException("生成证书时遇到异常：" + ex.Message, true);
+                LogHelper.AddException("生成证书时遇到异常：" + ex.Message, true);
             }
             finally
             {
@@ -1094,7 +977,7 @@ namespace Statistics
                 //有重大失误的情况下报错，没有失误就删除源word文件
                 if (exceptionNum > 0)
                 {
-                    AddLog(@"***************************************************************", true);
+                    LogHelper.AddLog(@"***************************************************************", true);
                     problemFilesList.Add(filePath);
                     exceptionNum = 0;
                     dataerrorNum = 0;
@@ -1148,13 +1031,13 @@ namespace Statistics
             MSExcel.Range rr = null;
             if (!checkClear)
             {
-                AddException(@"Excel文档无法打开", true);
+                LogHelper.AddException(@"Excel文档无法打开", true);
                 if (_sr != null && _sr.ExcelWorkbook != null)
                 {
                     _sr.ExcelWorkbook.Saved = true;
                     _sr.TryClose();
                 }
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
                 problemFilesList.Add(filePath);
                 exceptionNum = 0;
                 dataerrorNum = 0;
@@ -1167,7 +1050,7 @@ namespace Statistics
             foreach (MSExcel.Worksheet item in _sr.ExcelWorkbook.Sheets)
             {
                 //规范sheet标签名为证书编号
-                certId = _sr.GetText(_sr.ExcelWorkbook, item.Index, "L2", out checkClear).Trim();
+                certId = _sr.GetText(_sr.ExcelWorkbook, item.Index, new ExcelPosition("L2"));
                 if (certId.StartsWith(@"20") && (certId.Length == 9 || certId.Length == 10))
                 {
                     //有规范的证书号
@@ -1177,11 +1060,11 @@ namespace Statistics
                 else
                 {
                     //无规范的证书号
-                    rr = _sr.GetRange(_sr.ExcelWorkbook, item.Index, "A4", out checkClear);
+                    rr = _sr.GetRange(_sr.ExcelWorkbook, item.Index, new ExcelPosition("A4"));
                     if (!item.Name.Contains(@"标准模板") && rr.Text.ToString().Trim().StartsWith(@"送校单位"))
                     {
                         //有记录不包含规范的证书编号
-                        AddException(@"该文档有实验数据不包含证书编号", true);
+                        LogHelper.AddException(@"该文档有实验数据不包含证书编号", true);
                         noIdNumber++;
                     }
                 }
@@ -1191,14 +1074,14 @@ namespace Statistics
             {
                 if (noIdNumber == 0)
                 {
-                    AddException(@"该文档可能是空文档", true);
+                    LogHelper.AddException(@"该文档可能是空文档", true);
                 }
                 if (_sr != null && _sr.ExcelWorkbook != null)
                 {
                     _sr.ExcelWorkbook.Saved = true;
                     _sr.TryClose();
                 }
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
                 problemFilesList.Add(filePath);
                 exceptionNum = 0;
                 dataerrorNum = 0;
@@ -1206,7 +1089,7 @@ namespace Statistics
             }
             else if (exSheets.Count + noIdNumber > 1)
             {
-                AddException(@"该文档包含多个数据sheet，默认处理第一个", true);
+                LogHelper.AddException(@"该文档包含多个数据sheet，默认处理第一个", true);
             }
 
             certId = exSheets[stateIndex];
@@ -1214,22 +1097,22 @@ namespace Statistics
             checkClear = false;
             if (strCompany == "")
             {
-                AddException(@"送校单位信息未提取到", true);
+                LogHelper.AddException(@"送校单位信息未提取到", true);
                 checkClear = true;
             }
             if (strType == "")
             {
-                AddException(@"仪器型号信息未提取到", true);
+                LogHelper.AddException(@"仪器型号信息未提取到", true);
                 checkClear = true;
             }
             if (strMacSerial == "")
             {
-                AddException(@"主机编号信息未提取到", true);
+                LogHelper.AddException(@"主机编号信息未提取到", true);
                 checkClear = true;
             }
             if (checkClear)
             {
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
                 if (_sr != null && _sr.ExcelWorkbook != null)
                 {
                     _sr.ExcelWorkbook.Saved = true;
@@ -1252,13 +1135,13 @@ namespace Statistics
             }
             else
             {
-                AddException(@"数据类型无效", true);
+                LogHelper.AddException(@"数据类型无效", true);
                 if (_sr != null && _sr.ExcelWorkbook != null)
                 {
                     _sr.ExcelWorkbook.Saved = true;
                     _sr.TryClose();
                 }
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
                 problemFilesList.Add(filePath);
                 exceptionNum = 0;
                 dataerrorNum = 0;
@@ -1268,7 +1151,7 @@ namespace Statistics
             try
             {
                 //寻找目标统计文件
-                existFile = JobMethods.GetFilesFromType(output, _sr.GetText(_sr.ExcelWorkbook, stateIndex, "F5", out checkClear), ext, out checkClear);
+                existFile = JobMethods.GetFilesFromType(output, _sr.GetText(_sr.ExcelWorkbook, stateIndex, new ExcelPosition("F5")), ext, out checkClear);
                 if (!checkClear)
                 {
                     if (_sr != null && _sr.ExcelWorkbook != null)
@@ -1276,7 +1159,7 @@ namespace Statistics
                         _sr.ExcelWorkbook.Saved = true;
                         _sr.TryClose();
                     }
-                    AddLog(@"***************************************************************", true);
+                    LogHelper.AddLog(@"***************************************************************", true);
                     problemFilesList.Add(filePath);
                     exceptionNum = 0;
                     dataerrorNum = 0;
@@ -1310,13 +1193,13 @@ namespace Statistics
                     else
                     {
                         //对新记录不建档，退出
-                        AddException("没有在历史数据记录中发现匹配项，暂不处理。", true);
+                        LogHelper.AddException("没有在历史数据记录中发现匹配项，暂不处理。", true);
                         if (_sr != null && _sr.ExcelWorkbook != null)
                         {
                             _sr.ExcelWorkbook.Saved = true;
                             _sr.TryClose();
                         }
-                        AddLog(@"***************************************************************", true);
+                        LogHelper.AddLog(@"***************************************************************", true);
                         problemFilesList.Add(filePath);
                         exceptionNum = 0;
                         dataerrorNum = 0;
@@ -1329,7 +1212,7 @@ namespace Statistics
                     _eu = new ExcelUtility(temp_fi.FullName, out checkClear);
                     if (!checkClear)
                     {
-                        AddException(@"Excel文档无法打开", true);
+                        LogHelper.AddException(@"Excel文档无法打开", true);
                         if (_sr != null && _sr.ExcelWorkbook != null)
                         {
                             _sr.ExcelWorkbook.Saved = true;
@@ -1340,7 +1223,7 @@ namespace Statistics
                             _eu.ExcelWorkbook.Saved = true;
                             _eu.TryClose();
                         }
-                        AddLog(@"***************************************************************", true);
+                        LogHelper.AddLog(@"***************************************************************", true);
                         problemFilesList.Add(filePath);
                         exceptionNum = 0;
                         dataerrorNum = 0;
@@ -1363,7 +1246,7 @@ namespace Statistics
                             _eu.TryClose();
                         }
                         problemFilesList.Add(fileText);
-                        AddLog(@"***************************************************************", true);
+                        LogHelper.AddLog(@"***************************************************************", true);
                         exceptionNum = 0;
                         dataerrorNum = 0;
                         return;
@@ -1379,13 +1262,13 @@ namespace Statistics
                 }
                 else
                 {
-                    AddException(@"文件不存在：" + temp_fi.FullName, true);
+                    LogHelper.AddException(@"文件不存在：" + temp_fi.FullName, true);
                     fileText = filePath;
                 }
             }
             catch (Exception ex)
             {
-                AddException(@"生成证书时合并一步遇到异常：" + ex.Message, true);
+                LogHelper.AddException(@"生成证书时合并一步遇到异常：" + ex.Message, true);
             }
 
             try
@@ -1404,7 +1287,7 @@ namespace Statistics
                         _eu.TryClose();
                     }
                     problemFilesList.Add(fileText);
-                    AddLog(@"***************************************************************", true);
+                    LogHelper.AddLog(@"***************************************************************", true);
                     exceptionNum = 0;
                     dataerrorNum = 0;
                 }
@@ -1413,7 +1296,7 @@ namespace Statistics
                     //有以前记录，需要看是否超差 并且 超差不通过 并且 超差不通过的提示选择不生成证书 时选择退出
                     if (needTestGeCe && !canGeCe && (MessageBox.Show("检测到有数据超差，是否继续生成证书？", "问题", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.No))
                     {
-                        AddException("有实验数据超差，暂时保留原记录，不做任何处理。", true);
+                        LogHelper.AddException("有实验数据超差，暂时保留原记录，不做任何处理。", true);
                         if (_sr != null && _sr.ExcelWorkbook != null)
                         {
                             _sr.ExcelWorkbook.Saved = true;
@@ -1426,7 +1309,7 @@ namespace Statistics
                         }
                         DataUtility.DataUtility.RestoreFile(tempFo, backupKey);
                         problemFilesList.Add(fileText);
-                        AddLog(@"***************************************************************", true);
+                        LogHelper.AddLog(@"***************************************************************", true);
                         exceptionNum = 0;
                         dataerrorNum = 0;
                     }
@@ -1452,13 +1335,13 @@ namespace Statistics
                             _sr = new ExcelUtility(filePath, out checkClear);
                             if (!checkClear)
                             {
-                                AddException(@"Excel文档无法打开", true);
+                                LogHelper.AddException(@"Excel文档无法打开", true);
                                 if (_sr != null && _sr.ExcelWorkbook != null)
                                 {
                                     _sr.ExcelWorkbook.Saved = true;
                                     _sr.TryClose();
                                 }
-                                AddLog(@"***************************************************************", true);
+                                LogHelper.AddLog(@"***************************************************************", true);
                                 problemFilesList.Add(filePath);
                                 exceptionNum = 0;
                                 dataerrorNum = 0;
@@ -1474,7 +1357,7 @@ namespace Statistics
                         string temp = "";
                         foreach (MSExcel.Worksheet item in _sr.ExcelWorkbook.Sheets)
                         {
-                            temp = _sr.GetText(_sr.ExcelWorkbook, item.Index, "L2", out checkClear);
+                            temp = _sr.GetText(_sr.ExcelWorkbook, item.Index, new ExcelPosition("L2"));
                             if (certId == item.Name || certId == temp)
                             {
                                 stateIndex = item.Index;
@@ -1499,14 +1382,14 @@ namespace Statistics
                         JobMethods.GenerateCert(_sr, stateIndex, pS.DataPattern, pS.CertTemplateFilePath, pS.CertFolder, pS.PDFDataFolder, pS.TempFolder, shouldFix, out success);
                         if (!success)
                         {
-                            AddException("生成证书失败", true);
+                            LogHelper.AddException("生成证书失败", true);
                             if (_sr != null && _sr.ExcelWorkbook != null)
                             {
                                 _sr.ExcelWorkbook.Saved = true;
                                 _sr.TryClose();
                             }
                             problemFilesList.Add(fileText);
-                            AddLog(@"***************************************************************", true);
+                            LogHelper.AddLog(@"***************************************************************", true);
                             exceptionNum = 0;
                             dataerrorNum = 0;
                         }
@@ -1524,12 +1407,12 @@ namespace Statistics
             }
             catch (Exception ex)
             {
-                AddException(@"生成证书时遇到异常：" + ex.Message, true);
+                LogHelper.AddException(@"生成证书时遇到异常：" + ex.Message, true);
             }
             if (dataerrorNum > 0)
             {
                 dataerrorNum = 0;
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
             }
         }
 
@@ -1572,13 +1455,13 @@ namespace Statistics
             ExcelUtility _sr = new ExcelUtility(filePathNew, out checkClear);
             if (!checkClear)
             {
-                AddException(@"Excel文档无法打开", true);
+                LogHelper.AddException(@"Excel文档无法打开", true);
                 if (_sr.ExcelWorkbook != null)
                 {
                     _sr.ExcelWorkbook.Saved = true;
                     _sr.TryClose();
                 }
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
                 problemFilesList.Add(filePath);
                 exceptionNum = 0;
                 dataerrorNum = 0;
@@ -1600,7 +1483,7 @@ namespace Statistics
                 }
                 
                 //规范sheet标签名为证书编号
-                certId = _sr.GetText(_sr.ExcelWorkbook, item.Index, "L2", out checkClear).Trim();
+                certId = _sr.GetText(_sr.ExcelWorkbook, item.Index, new ExcelPosition("L2"));
                 if (certId.StartsWith(@"20") && (certId.Length == 9 || certId.Length == 10))
                 {
                     //有规范的证书号
@@ -1610,11 +1493,11 @@ namespace Statistics
                 else
                 {
                     //无规范的证书号
-                    rr = _sr.GetRange(_sr.ExcelWorkbook, item.Index, "A4", out checkClear);
+                    rr = _sr.GetRange(_sr.ExcelWorkbook, item.Index, new ExcelPosition("A4"));
                     if (!item.Name.Contains(@"标准模板") && rr.Text.ToString().Trim().StartsWith(@"送校单位"))
                     {
                         //有记录不包含规范的证书编号
-                        AddException(@"该文档有实验数据不包含证书编号", true);
+                        LogHelper.AddException(@"该文档有实验数据不包含证书编号", true);
                         noIdNumber++;
                     }
                 }
@@ -1624,14 +1507,14 @@ namespace Statistics
             {
                 if (noIdNumber == 0)
                 {
-                    AddException(@"该文档可能是空文档", true);
+                    LogHelper.AddException(@"该文档可能是空文档", true);
                 }
                 if (_sr.ExcelWorkbook != null)
                 {
                     _sr.ExcelWorkbook.Saved = true;
                     _sr.TryClose();
                 }
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
                 problemFilesList.Add(filePath);
                 exceptionNum = 0;
                 dataerrorNum = 0;
@@ -1639,7 +1522,7 @@ namespace Statistics
             }
             else if (exSheets.Count + noIdNumber > 1)
             {
-                AddException(@"该文档包含多个数据sheet，默认处理第一个", true);
+                LogHelper.AddException(@"该文档包含多个数据sheet，默认处理第一个", true);
             }
 
             JobMethods.TypeStandardize(_sr, stateIndex);
@@ -1648,10 +1531,10 @@ namespace Statistics
             year = certId.Substring(0, 4);
 
             tempName = year + "_" + _sr.GenerateFileName(_sr.ExcelWorkbook, stateIndex, out temp_strCompany, out temp_strType, out temp_strMacSerial, out temp_strSensorSerial, out Perfect);
-            if (temp_strCompany == "") AddException(@"送校单位信息未提取到", true);
-            if (temp_strType == "") AddException(@"仪器型号信息未提取到", true);
-            if ((temp_strSensorSerial.Length + temp_strMacSerial.Length) == 0) AddException(@"主机编号和探头编号信息未提取到", true);
-            if (temp_strMacSerial == "" || temp_strMacSerial == "/") AddException(@"主机编号信息未提取到", true);
+            if (temp_strCompany == "") LogHelper.AddException(@"送校单位信息未提取到", true);
+            if (temp_strType == "") LogHelper.AddException(@"仪器型号信息未提取到", true);
+            if ((temp_strSensorSerial.Length + temp_strMacSerial.Length) == 0) LogHelper.AddException(@"主机编号和探头编号信息未提取到", true);
+            if (temp_strMacSerial == "" || temp_strMacSerial == "/") LogHelper.AddException(@"主机编号信息未提取到", true);
 
             JobMethods.GetFixState(_sr, stateIndex, pattern, out needFix, out shouldFix);
             switch (pattern)
@@ -1672,13 +1555,13 @@ namespace Statistics
                     //templateName = DataUtility.DataUtility.PathClassifiedCombineName(Application.StartupPath + @"\试验记录模板", pattern, @"KV校准证书实验记录模板.xlsx");
                     break;
                 default:
-                    AddException(@"数据类型无效", true);
+                    LogHelper.AddException(@"数据类型无效", true);
                     if (_sr.ExcelWorkbook != null)
                     {
                         _sr.ExcelWorkbook.Saved = true;
                         _sr.TryClose();
                     }
-                    AddLog(@"***************************************************************", true);
+                    LogHelper.AddLog(@"***************************************************************", true);
                     problemFilesList.Add(filePath);
                     exceptionNum = 0;
                     dataerrorNum = 0;
@@ -1692,13 +1575,13 @@ namespace Statistics
                 File.Copy(templateName, tempName, true);
                 if (!File.Exists(tempName))
                 {
-                    AddException(@"拷贝模板失败", true);
+                    LogHelper.AddException(@"拷贝模板失败", true);
                     if (_sr.ExcelWorkbook != null)
                     {
                         _sr.ExcelWorkbook.Saved = true;
                         _sr.TryClose();
                     }
-                    AddLog(@"***************************************************************", true);
+                    LogHelper.AddLog(@"***************************************************************", true);
                     problemFilesList.Add(filePath);
                     exceptionNum = 0;
                     dataerrorNum = 0;
@@ -1711,13 +1594,13 @@ namespace Statistics
             }
             else
             {
-                AddException(@"模板不存在：" + templateName, true);
+                LogHelper.AddException(@"模板不存在：" + templateName, true);
                 if (_sr.ExcelWorkbook != null)
                 {
                     _sr.ExcelWorkbook.Saved = true;
                     _sr.TryClose();
                 }
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
                 problemFilesList.Add(filePath);
                 exceptionNum = 0;
                 dataerrorNum = 0;
@@ -1729,7 +1612,7 @@ namespace Statistics
             ExcelUtility _eu = new ExcelUtility(temp_fi.FullName, out checkClear);
             if (!checkClear) 
             {
-                AddException(@"Excel文档无法打开", true);
+                LogHelper.AddException(@"Excel文档无法打开", true);
                 if (_sr.ExcelWorkbook != null)
                 {
                     _sr.ExcelWorkbook.Saved = true;
@@ -1741,8 +1624,8 @@ namespace Statistics
                     _eu.TryClose();
                 }
                 File.Delete(temp_fi.FullName);
-                
-                AddLog(@"***************************************************************", true);
+
+                LogHelper.AddLog(@"***************************************************************", true);
                 problemFilesList.Add(filePath);
                 exceptionNum = 0;
                 dataerrorNum = 0;
@@ -1758,27 +1641,26 @@ namespace Statistics
                 JobMethods.CopyData(_sr, stateIndex, _eu, pattern, certId, needFix, shouldFix, startDestiRowIndex, out newSheetIndex, out checkClear);
                 if (newSheetIndex > 0 && checkClear)
                 {
-                    bool testflag;
-                    text = _eu.GetText(_eu.ExcelWorkbook, newSheetIndex, 2, 11, out testflag);
+                    text = _eu.GetText(_eu.ExcelWorkbook, newSheetIndex, new ExcelPosition(2, 11));
                     if (!text.ToLower().EndsWith("dyjl"))
                     {
-                        AddException("证书编号不以DYjl开始", true);
+                        LogHelper.AddException("证书编号不以DYjl开始", true);
                     }
 
                     if (certId.StartsWith("200"))
                     {
-                        _eu.WriteValue(_eu.ExcelWorkbook, newSheetIndex, 2, 11, "证书编号：DYjx", "", out testflag);
+                        _eu.WriteValue(_eu.ExcelWorkbook, newSheetIndex, new ExcelPosition(2, 11), "证书编号：DYjx", "");
                     }
                 }
                 else
                 {
-                    AddException(@"无法找到新合并入数据的位置", true);
+                    LogHelper.AddException(@"无法找到新合并入数据的位置", true);
                 }
                 _eu.ExcelWorkbook.Save();
             }
             catch (Exception ex)
             {
-                AddException(@"标准化时遇到异常：" + ex.Message, true);
+                LogHelper.AddException(@"标准化时遇到异常：" + ex.Message, true);
             }
             finally
             {
@@ -1795,8 +1677,8 @@ namespace Statistics
                 if (exceptionNum > 0)
                 {
                     File.Delete(temp_fi.FullName);
-                    
-                    AddLog(@"***************************************************************", true);
+
+                    LogHelper.AddLog(@"***************************************************************", true);
                     problemFilesList.Add(filePath);
                     exceptionNum = 0;
                     dataerrorNum = 0;
@@ -1815,7 +1697,7 @@ namespace Statistics
                 }
                 catch (Exception ex)
                 {
-                    AddDataError("已处理完成，但原文件无法正常删除！遇到异常：" + ex.Message, true);
+                    LogHelper.AddDataError("已处理完成，但原文件无法正常删除！遇到异常：" + ex.Message, true);
                 }
             }
         }
@@ -1864,13 +1746,13 @@ namespace Statistics
             MSExcel.Range rr = null;
             if (!checkClear)
             {
-                AddException(@"Excel文档无法打开", true);
+                LogHelper.AddException(@"Excel文档无法打开", true);
                 if (_sr != null && _sr.ExcelWorkbook != null)
                 {
                     _sr.ExcelWorkbook.Saved = true;
                     _sr.TryClose();
                 }
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
                 problemFilesList.Add(filePath);
                 exceptionNum = 0;
                 dataerrorNum = 0;
@@ -1883,7 +1765,7 @@ namespace Statistics
             foreach (MSExcel.Worksheet item in _sr.ExcelWorkbook.Sheets)
             {
                 //规范sheet标签名为证书编号
-                certId = _sr.GetText(_sr.ExcelWorkbook, item.Index, "L2", out checkClear).Trim();
+                certId = _sr.GetText(_sr.ExcelWorkbook, item.Index, new ExcelPosition("L2"));
                 if (certId.StartsWith(@"20") && (certId.Length == 9 || certId.Length == 10))
                 {
                     //有规范的证书号
@@ -1897,17 +1779,17 @@ namespace Statistics
                     if (!item.Name.Contains(@"标准模板") && rr.Text.ToString().Trim().StartsWith(@"送校单位"))
                     {
                         //有记录不包含规范的证书编号
-                        AddException(@"该文档有实验数据不包含证书编号", true);
+                        LogHelper.AddException(@"该文档有实验数据不包含证书编号", true);
                         noIdNumber++;
                     }
                 }
-                renameStr = _sr.GetText(_sr.ExcelWorkbook, item.Index, 5, 7, out checkClear).Trim().ToLower();
+                renameStr = _sr.GetText(_sr.ExcelWorkbook, item.Index, new ExcelPosition(5, 7)).ToLower();
                 if (renameStr.StartsWith(@"编号："))
                 {
                     _sr.WriteValue(_sr.ExcelWorkbook, item.Index, 5, 7, renameStr.Replace(@"编号：", @"主机编号："), out checkClear);
                 }
 
-                renameStr = _sr.GetText(_sr.ExcelWorkbook, item.Index, 5, 11, out checkClear).Trim().ToLower();
+                renameStr = _sr.GetText(_sr.ExcelWorkbook, item.Index, new ExcelPosition(5, 11)).ToLower();
                 if (renameStr.StartsWith(@"电离室号："))
                 {
                     _sr.WriteValue(_sr.ExcelWorkbook, item.Index, 5, 11, renameStr.Replace(@"电离室号：", @"探测器编号："), out checkClear);
@@ -1924,14 +1806,14 @@ namespace Statistics
             {
                 if (noIdNumber == 0)
                 {
-                    AddException(@"该文档可能是空文档", true);
+                    LogHelper.AddException(@"该文档可能是空文档", true);
                 }
                 if (_sr != null && _sr.ExcelWorkbook != null)
                 {
                     _sr.ExcelWorkbook.Saved = true;
                     _sr.TryClose();
                 }
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
                 problemFilesList.Add(filePath);
                 exceptionNum = 0;
                 dataerrorNum = 0;
@@ -1939,7 +1821,7 @@ namespace Statistics
             }
             else if (exSheets.Count + noIdNumber > 1)
             {
-                AddException(@"该文档包含多个数据sheet，默认处理第一个", true);
+                LogHelper.AddException(@"该文档包含多个数据sheet，默认处理第一个", true);
             }
 
             certId = exSheets[stateIndex];
@@ -1947,22 +1829,22 @@ namespace Statistics
             checkClear = false;
             if (strCompany == "")
             {
-                AddException(@"送校单位信息未提取到", true);
+                LogHelper.AddException(@"送校单位信息未提取到", true);
                 checkClear = true;
             }
             if (strType == "")
             {
-                AddException(@"仪器型号信息未提取到", true);
+                LogHelper.AddException(@"仪器型号信息未提取到", true);
                 checkClear = true;
             }
             if (strMacSerial == "" || strMacSerial == "主机_/")
             {
-                AddException(@"主机编号信息未提取到", true);
+                LogHelper.AddException(@"主机编号信息未提取到", true);
                 checkClear = true;
             }
             if (checkClear)
             {
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
                 if (_sr != null && _sr.ExcelWorkbook != null)
                 {
                     _sr.ExcelWorkbook.Saved = true;
@@ -1984,13 +1866,13 @@ namespace Statistics
             }
             else
             {
-                AddException(@"数据类型无效", true);
+                LogHelper.AddException(@"数据类型无效", true);
                 if (_sr != null && _sr.ExcelWorkbook != null)
                 {
                     _sr.ExcelWorkbook.Saved = true;
                     _sr.TryClose();
                 }
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
                 problemFilesList.Add(filePath);
                 exceptionNum = 0;
                 dataerrorNum = 0;
@@ -2028,12 +1910,12 @@ namespace Statistics
                     _eu = new ExcelUtility(temp_fi.FullName, out checkClear);
                     if (!checkClear)
                     {
-                        AddException(@"Excel文档无法打开", true);
+                        LogHelper.AddException(@"Excel文档无法打开", true);
                         _sr.ExcelWorkbook.Saved = true;
                         _eu.ExcelWorkbook.Saved = true;
                         _sr.TryClose();
                         _eu.TryClose();
-                        AddLog(@"***************************************************************", true);
+                        LogHelper.AddLog(@"***************************************************************", true);
                         problemFilesList.Add(filePath);
                         exceptionNum = 0;
                         dataerrorNum = 0;
@@ -2056,13 +1938,13 @@ namespace Statistics
                 }
                 else
                 {
-                    AddException(@"文件不存在：" + temp_fi.FullName, true);
+                    LogHelper.AddException(@"文件不存在：" + temp_fi.FullName, true);
                     fileText = filePath;
                 }
             }
             catch (Exception ex)
             {
-                AddException(@"存档合并时遇到异常：" + ex.Message, true);
+                LogHelper.AddException(@"存档合并时遇到异常：" + ex.Message, true);
             }
             finally
             {
@@ -2079,7 +1961,7 @@ namespace Statistics
                 if (exceptionNum > 0)
                 {
                     problemFilesList.Add(fileText);
-                    AddLog(@"***************************************************************", true);
+                    LogHelper.AddLog(@"***************************************************************", true);
                     exceptionNum = 0;
                     dataerrorNum = 0;
                 }
@@ -2087,8 +1969,8 @@ namespace Statistics
                 {
                     if (dataerrorNum > 0)
                     {
-                        AddLog(@"该文件只有非致命错误，已经成功处理", true);
-                        AddLog(@"***************************************************************", true);
+                        LogHelper.AddLog(@"该文件只有非致命错误，已经成功处理", true);
+                        LogHelper.AddLog(@"***************************************************************", true);
                         exceptionNum = 0;
                         dataerrorNum = 0;
                     }
@@ -2122,10 +2004,10 @@ namespace Statistics
             ExcelUtility _sr = new ExcelUtility(filePath, out checkClear);
             if (!checkClear)
             {
-                AddException(@"Excel文档无法打开", true);
+                LogHelper.AddException(@"Excel文档无法打开", true);
                 _sr.ExcelWorkbook.Saved = true;
                 _sr.TryClose();
-                AddLog(@"***************************************************************", true);
+                LogHelper.AddLog(@"***************************************************************", true);
                 problemFilesList.Add(filePath);
                 exceptionNum = 0;
                 dataerrorNum = 0;
@@ -2141,7 +2023,7 @@ namespace Statistics
             }
             catch (Exception ex)
             {
-                AddException(@"校验时遇到异常：" + ex.Message, true);
+                LogHelper.AddException(@"校验时遇到异常：" + ex.Message, true);
             }
             finally
             {
@@ -2165,7 +2047,7 @@ namespace Statistics
 
                 if (exceptionNum > 0)
                 {
-                    AddLog(@"***************************************************************", true);
+                    LogHelper.AddLog(@"***************************************************************", true);
                     problemFilesList.Add(filePath);
                     exceptionNum = 0;
                     dataerrorNum = 0;

@@ -17,6 +17,8 @@ using PdfSharp;
 
 using Statistics.Criterion.Dose;
 using Statistics.Criterion.KV;
+using Statistics.Log;
+using Statistics.Office.Excel;
 
 namespace Statistics
 {
@@ -71,15 +73,7 @@ namespace Statistics
         public string path = "";
         public static int docNumber = 0;
         public static object doNotSaveChanges = MSExcel.XlSaveAction.xlDoNotSaveChanges;
-        public delegate void TextBoxWriteInvoke(string str);
-        public static event TextBoxWriteInvoke tbwi;
-        public delegate void LogFileWriteInvoke(string str);
-        public static event LogFileWriteInvoke lfwi;
-        public delegate void AddExceptionDelegate(string ex, bool log);
-        public static event AddExceptionDelegate aed;
-        public delegate void AddDataErrorDelegate(string ex, bool log);
-        public static event AddDataErrorDelegate aded;
-
+        
         public ExcelUtility(string Path, out bool success)
         {
             path = Path;
@@ -91,13 +85,13 @@ namespace Statistics
                 }
                 else
                 {
-                    AddExceptionLog(@"文件不存在" + Environment.NewLine + path, true);
+                    LogHelper.AddException(@"文件不存在" + Environment.NewLine + path, true);
                     success = false;
                 }
             }
             else
             {
-                AddLog(@"异常25", @"文件不是常见的excel文档类型", true);
+                LogHelper.AddLog(@"异常25", @"文件不是常见的excel文档类型", true);
                 success = false;
             }
         }
@@ -108,39 +102,19 @@ namespace Statistics
             {
                 _excelApp = new MSExcel.Application();
                 //int[] oldproc = GetPIDs(@"EXCEL");
+                object oMissiong = System.Reflection.Missing.Value;
 
-                wb = _excelApp.Workbooks.Open(path);
+                wb = _excelApp.Workbooks.Open(path, oMissiong, oMissiong, oMissiong, oMissiong, oMissiong, oMissiong, oMissiong, oMissiong, oMissiong, oMissiong, oMissiong, oMissiong, oMissiong, oMissiong);
                 success = true;
                 //获取Excel App的句柄
                 hwnd = new IntPtr(ExcelApp.Hwnd);
                 //通过Windows API获取Excel进程ID
                 GetWindowThreadProcessId(hwnd, out pid);
                 _desiredName = path;
-                //int[] proc = GetNewProcess(oldproc, GetPIDs(@"EXCEL"));
-                //if (proc.Length == 1)
-                //{
-                //    pid = proc[0];
-                //    AddLog(@"进程号：" + pid, false);
-                //}
-                //else
-                //{
-                //    //获取Excel App的句柄
-                //    hwnd = new IntPtr(ExcelApp.Hwnd);
-                //    //通过Windows API获取Excel进程ID
-                //    GetWindowThreadProcessId(hwnd, out pid);
-                //    if (proc.Length == 0)
-                //    {
-                //        AddLog(@"没有检测到新打开的进程号，取值：" + pid, false);
-                //    }
-                //    else
-                //    {
-                //        AddLog(@"检测到多个新打开的进程号，取值：" + pid, false);
-                //    }
-                //}
             }
             catch (System.Exception ex)
             {
-                AddLog(@"异常24", ex.Message, true);
+                LogHelper.AddLog(@"异常24", ex.Message, true);
                 success = false;
             }
         }
@@ -184,28 +158,25 @@ namespace Statistics
         /// <param name="position"></param>
         /// <param name="success"></param>
         /// <returns></returns>
-        public MSExcel.Range GetRange(MSExcel._Workbook _excelDoc, int sheetIndex, string position, out bool success)
+        public MSExcel.Range GetRange(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position)
         {
             if (_excelDoc != null)
             {
-                if (poRegex.IsMatch(position))
+                if (position.IsValid)
                 {
                     MSExcel.Worksheet _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
-                    MSExcel.Range _excelRge = (MSExcel.Range)_excelSht.Cells.get_Range(position, position);
-                    success = true;
+                    MSExcel.Range _excelRge = (MSExcel.Range)_excelSht.Cells.get_Range(position.PositionString, position.PositionString);
                     return _excelRge;
                 }
                 else
                 {
-                    success = false;
-                    AddLog(@"异常26", @"读取数据时传入了错误的位置坐标：" + position, true);
+                    Log.LogHelper.AddLog(@"异常26", @"读取数据时传入了错误的位置坐标：" + position.PositionString, true);
                     return null;
                 }
             }
             else
             {
-                success = false;
-                AddLog(@"异常27", @"文件没有正常打开，无法读取数据", true);
+                Log.LogHelper.AddLog(@"异常27", @"文件没有正常打开，无法读取数据", true);
                 return null;
             }
         }
@@ -217,125 +188,34 @@ namespace Statistics
         /// <param name="col"></param>
         /// <param name="success"></param>
         /// <returns></returns>
-        public MSExcel.Range GetRange(MSExcel._Workbook _excelDoc, int sheetIndex, string position1, string position2, out bool success)
+        public MSExcel.Range GetRange(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position1, ExcelPosition position2)
         {
             if (_excelDoc != null)
             {
                 MSExcel.Worksheet _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
-                MSExcel.Range _excelRge = (MSExcel.Range)_excelSht.Cells.get_Range(position1, position2);
-                success = true;
+                MSExcel.Range _excelRge = (MSExcel.Range)_excelSht.Cells.get_Range(position1.PositionString, position2.PositionString);
                 return _excelRge;
             }
             else
             {
-                success = false;
-                AddLog(@"异常28", @"文件没有正常打开，无法读取数据", true);
-                return null;
-            }
-        }
-        /// <summary>
-        /// 获取指定坐标位置多个单元格的range变量
-        /// </summary>
-        /// <param name="sheetIndex"></param>
-        /// <param name="row"></param>
-        /// <param name="col"></param>
-        /// <param name="success"></param>
-        /// <returns></returns>
-        public MSExcel.Range GetRange(MSExcel._Workbook _excelDoc, int sheetIndex, int row, int col, out bool success)
-        {
-            if (_excelDoc != null)
-            {
-                MSExcel.Worksheet _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
-                MSExcel.Range _excelRge = (MSExcel.Range)_excelSht.Cells[row, col];
-                success = true;
-                return _excelRge;
-            }
-            else
-            {
-                success = false;
-                AddLog(@"异常29", @"文件没有正常打开，无法读取数据", true);
+                Log.LogHelper.AddLog(@"异常28", @"文件没有正常打开，无法读取数据", true);
                 return null;
             }
         }
 
-        public string GetText(MSExcel._Workbook _excelDoc, int sheetIndex, string position, out bool success)
+        public string GetText(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position)
         {
-            MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, position, out success);
-            if (success)
+            try
             {
-                return _excelRge.Text.ToString();
+                MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, position);
+                return _excelRge.Text.ToString().Trim();
             }
-            else
+            catch
             {
                 return "";
             }
         }
 
-        public string GetText(MSExcel._Workbook _excelDoc, int sheetIndex, int row, int col, out bool success)
-        {
-            MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, row, col, out success);
-            if (success)
-            {
-                return _excelRge.Text.ToString();
-            }
-            else
-            {
-                return "";
-            }
-        }
-        /*
-        public void WriteValue(int sheetIndex, string position, string wValue, out bool success)
-        {
-            if (_excelDoc != null)
-            {
-                if (poRegex.IsMatch(position))
-                {
-                    _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
-                    _excelRge = (MSExcel.Range)_excelSht.Cells.get_Range(position, position);
-                    _excelRge.Value = wValue;
-                    success = true;
-                    return;
-                }
-                else
-                {
-                    success = false;
-                    AppException.AddExceptionLog(@"读取数据时传入了错误的位置坐标：" + position);
-                    return;
-                }
-            }
-            else
-            {
-                success = false;
-                AppException.AddExceptionLog(@"文件没有正常打开，无法读取数据");
-                return;
-            }
-        }
-        
-        public string ReadValue(int sheetIndex, string position, out bool success)
-        {
-            success = false;
-            if (_excelDoc != null)
-            {
-                try
-                {
-                    _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
-                    string temp = _excelSht.Cells[rowIndex, colomnIndex];
-                    success = true;
-                    return temp;
-                }
-                catch (Exception ex)
-                {
-                    AppException.AddExceptionLog(ex.Message);
-                    return "";
-                }
-            }
-            else
-            {
-                AppException.AddExceptionLog(@"文件没有正常打开，无法读取数据");
-                return "";
-            }
-        }
-        */
         /// <summary>
         /// 向某个坐标位置写入文本
         /// </summary>
@@ -344,33 +224,28 @@ namespace Statistics
         /// <param name="colomnIndex"></param>
         /// <param name="wValue"></param>
         /// <param name="success"></param>
-        public void WriteValue(MSExcel._Workbook _excelDoc, int sheetIndex, int rowIndex, int colomnIndex, string wValue, out bool success)
+        public void WriteValue(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position, string wValue)
         {
             if (_excelDoc != null)
             {
                 try
                 {
-                    bool checkSta;
                     MSExcel.Worksheet _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
-                    _excelSht.Cells[rowIndex, colomnIndex] = wValue;
-                    MSExcel.Range _excelRge = _excelSht.get_Range(DataUtility.DataUtility.PositionString(rowIndex, colomnIndex, out checkSta), DataUtility.DataUtility.PositionString(rowIndex, colomnIndex, out checkSta));
+                    _excelSht.Cells[position.RowIndex, position.ColumnIndex] = wValue;
+                    MSExcel.Range _excelRge = _excelSht.get_Range(new ExcelPosition(position.RowIndex, position.ColumnIndex).PositionString);
                     //_excelRge.NumberFormatLocal = "0.00_ ";
-                    success = checkSta;
                     return;
                 }
                 catch (Exception ex)
                 {
-                    success = false;
-                    AddLog(@"异常30", ex.Message, true);
-                    AddLog(@"异常30", "行：" + rowIndex.ToString() + "，列：" + colomnIndex.ToString(), true);
-                    AddLog(@"异常31", "  " + ex.TargetSite.ToString(), true);
+                    Log.LogHelper.AddLog(@"异常230", ex.Message, true);
+                    Log.LogHelper.AddLog(@"异常230", "位置：" + position.PositionString, true);
                     return;
                 }
             }
             else
             {
-                success = false;
-                AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
+                Log.LogHelper.AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
                 return;
             }
         }
@@ -383,7 +258,7 @@ namespace Statistics
         /// <param name="wValue"></param>
         /// <param name="numberFormat"></param>
         /// <param name="success"></param>
-        public void WriteValue(MSExcel._Workbook _excelDoc, int sheetIndex, int rowIndex, int colomnIndex, string wValue, string numberFormat, out bool success)
+        public void WriteValue(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position, string wValue, string numberFormat)
         {
             if (_excelDoc != null)
             {
@@ -391,24 +266,19 @@ namespace Statistics
                 {
                     bool checkSta;
                     MSExcel.Worksheet _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
-                    _excelSht.Cells[rowIndex, colomnIndex] = wValue;
-                    MSExcel.Range _excelRge = _excelSht.get_Range(DataUtility.DataUtility.PositionString(rowIndex, colomnIndex, out checkSta), DataUtility.DataUtility.PositionString(rowIndex, colomnIndex, out checkSta));
+                    _excelSht.Cells[position.RowIndex, position.ColumnIndex] = wValue;
+                    MSExcel.Range _excelRge = _excelSht.get_Range(DataUtility.DataUtility.PositionString(position.RowIndex, position.ColumnIndex, out checkSta), DataUtility.DataUtility.PositionString(position.RowIndex, position.ColumnIndex, out checkSta));
                     _excelRge.NumberFormatLocal = numberFormat;
-                    success = checkSta;
                     return;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    success = false;
-                    //AddLog(@"异常33", ex.Message, true);
-                    //AddLog(@"异常34", "  " + ex.TargetSite.ToString(), true);
                     return;
                 }
             }
             else
             {
-                success = false;
-                AddLog(@"异常35", @"文件没有正常打开，无法读取数据", true);
+                LogHelper.AddLog(@"异常35", @"文件没有正常打开，无法读取数据", true);
                 return;
             }
         }
@@ -420,7 +290,7 @@ namespace Statistics
         /// <param name="colomnIndex"></param>
         /// <param name="wValue"></param>
         /// <param name="success"></param>
-        public void WriteFormula(MSExcel._Workbook _excelDoc, int sheetIndex, int rowIndex, int colomnIndex, string wValue, out bool success)
+        public void WriteFormula(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position, string wValue)
         {
             if (_excelDoc != null)
             {
@@ -429,23 +299,20 @@ namespace Statistics
                     bool checkSta;
                     MSExcel.Worksheet _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
                     _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
-                    MSExcel.Range _excelRge = _excelSht.get_Range(DataUtility.DataUtility.PositionString(rowIndex, colomnIndex, out checkSta), DataUtility.DataUtility.PositionString(rowIndex, colomnIndex, out checkSta));
+                    MSExcel.Range _excelRge = _excelSht.get_Range(DataUtility.DataUtility.PositionString(position.RowIndex, position.ColumnIndex, out checkSta), DataUtility.DataUtility.PositionString(position.RowIndex, position.ColumnIndex, out checkSta));
                     _excelRge.FormulaLocal = wValue;
-                    success = true;
                     return;
                 }
                 catch (Exception ex)
                 {
-                    success = false;
-                    AddLog(@"异常36", ex.Message, true);
-                    AddLog(@"异常37", "  " + ex.TargetSite.ToString(), true);
+                    LogHelper.AddLog(@"异常36", ex.Message, true);
+                    LogHelper.AddLog(@"异常37", "  " + ex.TargetSite.ToString(), true);
                     return;
                 }
             }
             else
             {
-                success = false;
-                AddLog(@"异常38", @"文件没有正常打开，无法读取数据", true);
+                LogHelper.AddLog(@"异常38", @"文件没有正常打开，无法读取数据", true);
                 return;
             }
         }
@@ -453,17 +320,17 @@ namespace Statistics
         /// 从某个位置复制数据，并向其他某个坐标位置粘贴
         /// </summary>
         /// <param name="sourceSheetIndex"></param>
-        /// <param name="position"></param>
+        /// <param name="sourcePosition"></param>
         /// <param name="destinationSheetIndex"></param>
         /// <param name="rowIndex"></param>
         /// <param name="colomnIndex"></param>
         /// <param name="success"></param>
-        public void CopyData(MSExcel._Workbook sourceExcelDoc, int sourceSheetIndex, string position, MSExcel._Workbook destinationExcelDoc, int destinationSheetIndex, int rowIndex, int colomnIndex, out bool success)
+        public void CopyData(MSExcel._Workbook sourceExcelDoc, int sourceSheetIndex, ExcelPosition sourcePosition, MSExcel._Workbook destinationExcelDoc, int destinationSheetIndex, ExcelPosition destinationPosition, out bool success)
         {
             try
             {
                 string temp;
-                MSExcel.Range _excelRge = GetRange(sourceExcelDoc, sourceSheetIndex, position, out success);
+                MSExcel.Range _excelRge = GetRange(sourceExcelDoc, sourceSheetIndex, sourcePosition);
                 if (_excelRge.Text.ToString().StartsWith(@"#DI") || _excelRge.Value2 == null)
                 {
                     temp = "/";
@@ -475,12 +342,12 @@ namespace Statistics
                     success = true;
                 }
 
-                WriteValue(destinationExcelDoc, destinationSheetIndex, rowIndex, colomnIndex, temp, out success);
+                WriteValue(destinationExcelDoc, destinationSheetIndex, destinationPosition, temp);
             }
             catch (System.Exception ex)
             {
-                AddLog(@"异常39", ex.Message, true);
-                AddLog(@"异常40", "  " + ex.TargetSite.ToString(), true);
+                LogHelper.AddLog(@"异常39", ex.Message, true);
+                LogHelper.AddLog(@"异常40", "  " + ex.TargetSite.ToString(), true);
                 success = false;
             }
         }
@@ -488,18 +355,18 @@ namespace Statistics
         /// 从某个位置复制数据，并向其他某个坐标位置以特定格式粘贴
         /// </summary>
         /// <param name="sourceSheetIndex"></param>
-        /// <param name="position"></param>
+        /// <param name="sourcePosition"></param>
         /// <param name="destinationSheetIndex"></param>
         /// <param name="rowIndex"></param>
         /// <param name="colomnIndex"></param>
         /// <param name="numberFormat"></param>
         /// <param name="success"></param>
-        public void CopyData(MSExcel._Workbook sourceExcelDoc, int sourceSheetIndex, string position, MSExcel._Workbook destinationExcelDoc, int destinationSheetIndex, int rowIndex, int colomnIndex, string numberFormat, out bool success)
+        public void CopyData(MSExcel._Workbook sourceExcelDoc, int sourceSheetIndex, ExcelPosition sourcePosition, MSExcel._Workbook destinationExcelDoc, int destinationSheetIndex, ExcelPosition destinationPosition, string numberFormat, out bool success)
         {
             try
             {
                 string temp;
-                MSExcel.Range _excelRge = GetRange(sourceExcelDoc, sourceSheetIndex, position, out success);
+                MSExcel.Range _excelRge = GetRange(sourceExcelDoc, sourceSheetIndex, sourcePosition);
                 if (_excelRge.Text.ToString().StartsWith(@"#DI") || _excelRge.Value2 == null)
                 {
                     temp = "/";
@@ -507,16 +374,16 @@ namespace Statistics
                 }
                 else
                 {
-                    temp = GetText(sourceExcelDoc, sourceSheetIndex, position, out success);
+                    temp = GetText(sourceExcelDoc, sourceSheetIndex, sourcePosition);
                     success = true;
                 }
 
-                WriteValue(destinationExcelDoc, destinationSheetIndex, rowIndex, colomnIndex, temp, numberFormat, out success);
+                WriteValue(destinationExcelDoc, destinationSheetIndex, destinationPosition, temp, numberFormat);
             }
             catch (System.Exception ex)
             {
-                AddLog(@"异常41", ex.Message, true);
-                AddLog(@"异常42", "  " + ex.TargetSite.ToString(), true);
+                LogHelper.AddLog(@"异常41", ex.Message, true);
+                LogHelper.AddLog(@"异常42", "  " + ex.TargetSite.ToString(), true);
                 success = false;
             }
         }
@@ -531,16 +398,16 @@ namespace Statistics
         /// <param name="title"></param>
         /// <param name="success"></param>
         /// <returns></returns>
-        public string GetMergeContent(MSExcel._Workbook _excelDoc, int sheetIndex, int row, int col, int newRow, int newCol, string title, out bool success)
+        public string GetMergeContent(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition startPosition, ExcelPosition endPosition, string title, out bool success)
         {
-            string temp_text = GetText(_excelDoc, sheetIndex, row, col, out success).Trim().Replace(@":", "：").Replace(@" ", "");
+            string temp_text = GetText(_excelDoc, sheetIndex, startPosition).Replace(@":", "：").Replace(@" ", "");
             
-            if (success && temp_text.StartsWith(title))
+            if (temp_text.StartsWith(title))
             {
                 if (temp_text.EndsWith(title))
                 {
-                    temp_text = GetText(_excelDoc, sheetIndex, newRow, newCol, out success).Trim();
-                    if (success && temp_text != "")
+                    temp_text = GetText(_excelDoc, sheetIndex, endPosition);
+                    if (temp_text != "")
                     {
                         success = true;
                         return temp_text;
@@ -575,10 +442,10 @@ namespace Statistics
         /// <param name="titles"></param>
         /// <param name="success"></param>
         /// <returns></returns>
-        public string GetMergeContent(MSExcel._Workbook _excelDoc, int sheetIndex, int row, int col, int newRow, int newCol, string[] titles, out bool success)
+        public string GetMergeContent(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition startPosition, ExcelPosition endPosition, string[] titles, out bool success)
         {
-            string temp_text1 = GetText(_excelDoc, sheetIndex, row, col, out success).Trim().Replace(@":", "：").Replace(@" ", "");
-            string temp_text2 = GetText(_excelDoc, sheetIndex, newRow, newCol, out success).Trim();
+            string temp_text1 = GetText(_excelDoc, sheetIndex, startPosition).Replace(@":", "：").Replace(@" ", "");
+            string temp_text2 = GetText(_excelDoc, sheetIndex, endPosition);
             string title = "";
             if (!temp_text1.Equals(""))
             {
@@ -640,15 +507,15 @@ namespace Statistics
                 catch (Exception ex)
                 {
                     success = false;
-                    AddLog(@"异常30", ex.Message, true);
-                    AddLog(@"异常31", "  " + ex.TargetSite.ToString(), true);
+                    LogHelper.AddLog(@"异常30", ex.Message, true);
+                    LogHelper.AddLog(@"异常31", "  " + ex.TargetSite.ToString(), true);
                     return;
                 }
             }
             else
             {
                 success = false;
-                AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
+                LogHelper.AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
                 return;
             }
         }
@@ -680,15 +547,15 @@ namespace Statistics
                 catch (Exception ex)
                 {
                     success = false;
-                    AddLog(@"异常30", ex.Message, true);
-                    AddLog(@"异常31", "  " + ex.TargetSite.ToString(), true);
+                    LogHelper.AddLog(@"异常30", ex.Message, true);
+                    LogHelper.AddLog(@"异常31", "  " + ex.TargetSite.ToString(), true);
                     return;
                 }
             }
             else
             {
                 success = false;
-                AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
+                LogHelper.AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
                 return;
             }
         }
@@ -696,8 +563,7 @@ namespace Statistics
         public bool HadNumber(MSExcel._Workbook _excelDoc, int sheetIndex, int row, int col)
         {
             double tempDig;
-            bool checkClear;
-            string text = GetText(_excelDoc, sheetIndex, DataUtility.DataUtility.PositionString(row, col), out checkClear);
+            string text = GetText(_excelDoc, sheetIndex, new ExcelPosition(row, col));
             if (text != "-2146826281" && double.TryParse(text, out tempDig))
             {
                 return true;
@@ -732,7 +598,7 @@ namespace Statistics
                     case "120kV":
                         return 12;
                     default:
-                        AddExceptionLog("获取列索引的规范不是剂量常用的规范", true);
+                        LogHelper.AddException("获取列索引的规范不是剂量常用的规范", true);
                         return 16;
                 }
             }
@@ -751,7 +617,7 @@ namespace Statistics
                     case "140kV":
                         return 12;
                     default:
-                        AddExceptionLog("获取列索引的规范不是CT常用的规范", true);
+                        LogHelper.AddException("获取列索引的规范不是CT常用的规范", true);
                         return 16;
                 }
             }
@@ -761,7 +627,7 @@ namespace Statistics
             }
             else
             {
-                AddExceptionLog("获取列索引时输入了不合法的选项", true);
+                LogHelper.AddException("获取列索引时输入了不合法的选项", true);
                 return 16;
             }
         }
@@ -816,7 +682,7 @@ namespace Statistics
                 }
                 else
                 {
-                    AddExceptionLog("分析规范数据时发生错误", true);
+                    LogHelper.AddException("分析规范数据时发生错误", true);
                     checkClear = false;
                     break;
                 }
@@ -830,13 +696,12 @@ namespace Statistics
             //确定数据的规范
             NormalDoseCriterion dataCri = NormalDoseCriterion.Null;
             string text = ((MSExcel._Worksheet)_excelDoc.Sheets[sheetIndex]).Name;
-            bool checkClear;
 
             if (text != "标准模板")
             {
                 if (text == "统计")
                 {
-                    text = GetText(_excelDoc, sheetIndex, 5, columnIndex, out checkClear);
+                    text = GetText(_excelDoc, sheetIndex, new ExcelPosition(5, columnIndex));
                     if (text.EndsWith("kV"))
                     {
                         text = text.Replace("kV", "").Trim();
@@ -877,7 +742,7 @@ namespace Statistics
                 }
                 else
                 {
-                    text = GetText(_excelDoc, sheetIndex, DataUtility.DataUtility.PositionString(13, columnIndex), out checkClear);
+                    text = GetText(_excelDoc, sheetIndex, new ExcelPosition(13, columnIndex));
                     if (text.Contains("140"))
                     {
                         dataCri = NormalDoseCriterion.RQR_140;
@@ -999,13 +864,12 @@ namespace Statistics
             //确定数据的规范
             KVCriterion dataCri = KVCriterion.Null;
             string text = ((MSExcel._Worksheet)_excelDoc.Sheets[sheetIndex]).Name;
-            bool checkClear;
 
             if (text != "标准模板")
             {
                 if (text == "统计")
                 {
-                    text = GetText(_excelDoc, sheetIndex, 5, columnIndex, out checkClear);
+                    text = GetText(_excelDoc, sheetIndex, new ExcelPosition(5, columnIndex));
                     if (text.EndsWith("kV"))
                     {
                         text = text.Replace("kV", "").Trim();
@@ -1046,7 +910,7 @@ namespace Statistics
                 }
                 else
                 {
-                    text = GetText(_excelDoc, sheetIndex, DataUtility.DataUtility.PositionString(13, columnIndex), out checkClear);
+                    text = GetText(_excelDoc, sheetIndex, new ExcelPosition(13, columnIndex));
                     if (text.Contains("140"))
                     {
                         dataCri = KVCriterion.RQR_140;
@@ -1109,7 +973,7 @@ namespace Statistics
                         }
                         else
                         {
-                            AddExceptionLog("无法识别的规范", true);
+                            LogHelper.AddException("无法识别的规范", true);
                         }
                     }
                 }
@@ -1213,7 +1077,7 @@ namespace Statistics
                     halfLayerText = @"6.57";
                     break;
                 default:
-                    AddExceptionLog("在统计页写入第" + columnIndex + "列的数据时遇到无法识别的规范：" + cri.Voltage, true);
+                    LogHelper.AddException("在统计页写入第" + columnIndex + "列的数据时遇到无法识别的规范：" + cri.Voltage, true);
                     break;
             }
             if (volText != "")
@@ -1280,7 +1144,7 @@ namespace Statistics
                     halfLayerText = @"6.57";
                     break;
                 default:
-                    AddExceptionLog("在统计页写入第" + columnIndex + "列的数据时遇到无法识别的规范：" + cri.Voltage, true);
+                    LogHelper.AddException("在统计页写入第" + columnIndex + "列的数据时遇到无法识别的规范：" + cri.Voltage, true);
                     break;
             }
             if (volText != "")
@@ -1356,7 +1220,7 @@ namespace Statistics
                     halfLayerText = @"6.57";
                     break;
                 default:
-                    AddExceptionLog("在数据页写入第" + columnIndex + "列的数据时遇到无法识别的规范：" + cri.Voltage, true);
+                    LogHelper.AddException("在数据页写入第" + columnIndex + "列的数据时遇到无法识别的规范：" + cri.Voltage, true);
                     break;
             }
             if (criText != "")
@@ -1472,7 +1336,7 @@ namespace Statistics
                                     countIndex++;
                                 }
                                 item.Name = certId + "-" + countIndex;
-                                AddExceptionLog(@"有两个数据页包含了相同的证书编号", true);
+                                LogHelper.AddException(@"有两个数据页包含了相同的证书编号", true);
                             }
                             sheetsName.Add(item.Name);
                         }
@@ -1487,10 +1351,10 @@ namespace Statistics
                     else
                     {
                         //无规范的证书号
-                        if (!item.Name.Contains(@"标准模板") && GetText(_excelDoc, item.Index, "A4", out checkClear).Trim().StartsWith(@"送校单位"))
+                        if (!item.Name.Contains(@"标准模板") && GetText(_excelDoc, item.Index, new ExcelPosition("A4")).StartsWith(@"送校单位"))
                         {
                             //有记录不包含规范的证书编号
-                            AddExceptionLog(@"该文档有实验数据不包含证书编号", true);
+                            LogHelper.AddException(@"该文档有实验数据不包含证书编号", true);
                         }
                     }
                     rr = null;
@@ -1579,7 +1443,7 @@ namespace Statistics
                                     countIndex++;
                                 }
                                 item.Name = certId + "-" + countIndex;
-                                AddExceptionLog(@"有两个数据页包含了相同的证书编号", true);
+                                LogHelper.AddException(@"有两个数据页包含了相同的证书编号", true);
                             }
                             sheetsName.Add(item.Name);
                         }
@@ -1594,10 +1458,10 @@ namespace Statistics
                     else
                     {
                         //无规范的证书号
-                        if (!item.Name.Contains(@"标准模板") && GetText(_excelDoc, item.Index, "A4", out checkClear).Trim().StartsWith(@"送校单位"))
+                        if (!item.Name.Contains(@"标准模板") && GetText(_excelDoc, item.Index, new ExcelPosition("A4")).StartsWith(@"送校单位"))
                         {
                             //有记录不包含规范的证书编号
-                            AddExceptionLog(@"该文档有实验数据不包含证书编号", true);
+                            LogHelper.AddException(@"该文档有实验数据不包含证书编号", true);
                         }
                     }
                     rr = null;
@@ -2712,7 +2576,7 @@ namespace Statistics
                     else
                     {
                         //无规范的证书号
-                        if (!item.Name.Contains(@"标准模板") && GetText(_excelDoc, item.Index, "A4", out checkClear).Trim().StartsWith(@"送校单位"))
+                        if (!item.Name.Contains(@"标准模板") && GetText(_excelDoc, item.Index, "A4", out checkClear).StartsWith(@"送校单位"))
                         {
                             //有记录不包含规范的证书编号
                             pass = false;
@@ -2866,38 +2730,6 @@ namespace Statistics
 
         #endregion
 
-        #region Log
-
-        public void AddLog(string pre, string ex, bool sw)
-        {
-            string temp = @"【" + pre + @"】" + ex;
-            if (sw)
-            {
-                lfwi(temp);
-            }
-            tbwi(temp + Environment.NewLine);
-        }
-
-        public void AddLog(string ex, bool sw)
-        {
-            if (sw)
-            {
-                lfwi(ex);
-            }
-            tbwi(ex + Environment.NewLine);
-        }
-
-        public void AddExceptionLog(string ex, bool log)
-        {
-            aed(ex, log);
-        }
-
-        public void AddDataErrorLog(string ex, bool log)
-        {
-            aded(ex, log);
-        }
-        #endregion
-
         #region Property
 
         public MSExcel._Application ExcelApp
@@ -2929,7 +2761,6 @@ namespace Statistics
         }
 
         #endregion
-
     }
 
     public class WordUtility
