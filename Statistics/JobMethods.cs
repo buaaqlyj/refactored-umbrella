@@ -293,7 +293,7 @@ namespace Statistics
                 files = (new DirectoryInfo(path)).GetFiles(extension, SearchOption.AllDirectories);
                 if (files.Length > 0)
                 {
-                    allfiles = DataUtility.DataUtility.CombineFileInfoArray(allfiles, files);
+                    allfiles = Util.ArrayExt.CombineArray<FileInfo>(allfiles, files);
                 }
             }
             checkClear = true;
@@ -2053,7 +2053,7 @@ namespace Statistics
                         }
                         break;
                     default:
-                        AddException("生成证书时指定了不存在的检定类型", true);
+                        Log.LogHelper.AddException("生成证书时指定了不存在的检定类型", true);
                         break;
                 }
 
@@ -2128,18 +2128,18 @@ namespace Statistics
             catch (Exception ex)
             {
                 success = false;
-                AddException("生成证书时出现错误：" + ex.Message, true);
+                Log.LogHelper.AddException("生成证书时出现错误：" + ex.Message, true);
             }
         }
 
         public static void ReportSuspiciousFiles(Dictionary<string, int> suspFiles, string filename)
         {
-            AddException("发现" + suspFiles.Count + "个可疑匹配项，暂不作任何处理", true);
-            AddLog("可疑15", "    原文件名：" + filename, true);
+            Log.LogHelper.AddException("发现" + suspFiles.Count + "个可疑匹配项，暂不作任何处理", true);
+            Log.LogHelper.AddLog("可疑15", "    原文件名：" + filename, true);
             foreach (KeyValuePair<string, int> item in suspFiles)
             {
-                AddLog("可疑16", "      文件名：" + item.Key, true);
-                AddLog("可疑17", "        可疑指数：" + item.Value + " %", true);
+                Log.LogHelper.AddLog("可疑16", "      文件名：" + item.Key, true);
+                Log.LogHelper.AddLog("可疑17", "        可疑指数：" + item.Value + " %", true);
             }
         }
 

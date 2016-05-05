@@ -412,14 +412,14 @@ namespace Statistics
         {
             if (!isWorking)
             {
-                existFile = (new DirectoryInfo(DataUtility.DataUtility.PathCombineClassified(ProgramConfiguration.ArchivedExcelFolder, comboBox1.SelectedIndex))).GetFiles(@"*.xls*", SearchOption.AllDirectories);
+                existFile = (new DirectoryInfo(Util.PathExt.PathCombineClassified(ProgramConfiguration.ArchivedExcelFolder, comboBox1.SelectedIndex))).GetFiles(@"*.xls*", SearchOption.AllDirectories);
             }
         }
 
         private void updateSelectionAndLabel()
         {
-            string dpath = DataUtility.DataUtility.PathCombineClassified(System.Windows.Forms.Application.StartupPath + @"\试验记录模板\", comboBox1.SelectedIndex);
-            string cpath = DataUtility.DataUtility.PathCombineClassified(System.Windows.Forms.Application.StartupPath + @"\试验证书模板\", comboBox1.SelectedIndex);
+            string dpath = Util.PathExt.PathCombineClassified(System.Windows.Forms.Application.StartupPath + @"\试验记录模板\", comboBox1.SelectedIndex);
+            string cpath = Util.PathExt.PathCombineClassified(System.Windows.Forms.Application.StartupPath + @"\试验证书模板\", comboBox1.SelectedIndex);
             string keyword = "";
             string dataType = "";
             //数据类型
@@ -565,39 +565,47 @@ namespace Statistics
                 ListViewItem lvi = null;
                 Color textColor = Color.Black;
                 int abnormalItemCount = 0;
-                foreach (string item in standardUsage[dataType])
+                if (standardUsage.Count < 1)
                 {
-                    if (standard[item].State == "正常")
-                    {
-                        textColor = Color.Green;
-                    }
-                    else if (standard[item].State == "即将过期")
-                    {
-                        textColor = Color.DarkOrange;
-                        abnormalItemCount++;
-                    }
-                    else
-                    {
-                        textColor = Color.Red;
-                        abnormalItemCount++;
-                    }
-                    lvi = new ListViewItem(new string[] { standard[item].Name, standard[item].Date, standard[item].State }, -1, textColor, System.Drawing.Color.Empty, null);
-                    lvItem.Add(lvi);
-                }
-                listView1.Items.Clear();
-                foreach (ListViewItem item in lvItem)
-                {
-                    listView1.Items.Add(item);
-                }
-                if (abnormalItemCount > 0)
-                {
-                    label19.Text = "有标准仪器已超期或即将超期！";
+                    label19.Text = "未找到标准仪器信息！";
                     label19.ForeColor = Color.DarkOrange;
                 }
                 else
                 {
-                    label19.Text = "标准仪器状态正常！";
-                    label19.ForeColor = Color.Green;
+                    foreach (string item in standardUsage[dataType])
+                    {
+                        if (standard[item].State == "正常")
+                        {
+                            textColor = Color.Green;
+                        }
+                        else if (standard[item].State == "即将过期")
+                        {
+                            textColor = Color.DarkOrange;
+                            abnormalItemCount++;
+                        }
+                        else
+                        {
+                            textColor = Color.Red;
+                            abnormalItemCount++;
+                        }
+                        lvi = new ListViewItem(new string[] { standard[item].Name, standard[item].Date, standard[item].State }, -1, textColor, System.Drawing.Color.Empty, null);
+                        lvItem.Add(lvi);
+                    }
+                    listView1.Items.Clear();
+                    foreach (ListViewItem item in lvItem)
+                    {
+                        listView1.Items.Add(item);
+                    }
+                    if (abnormalItemCount > 0)
+                    {
+                        label19.Text = "有标准仪器已超期或即将超期！";
+                        label19.ForeColor = Color.DarkOrange;
+                    }
+                    else
+                    {
+                        label19.Text = "标准仪器状态正常！";
+                        label19.ForeColor = Color.Green;
+                    }
                 }
             }
         }
@@ -958,7 +966,7 @@ namespace Statistics
                     _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 8, 13, "不修正", out success);
                 }
                 //写入记录者
-                _sr.WriteImage(_sr.ExcelWorkbook, ws1.Index, 29, 7, person, 45, 28, out success);
+                _sr.WriteImage(_sr.ExcelWorkbook, ws1.Index, 29, 7, Util.PathExt.PathCombine(Application.StartupPath, person.Path), 45, 28, out success);
 
                 _sr.ExcelWorkbook.Save();
             }
@@ -1176,7 +1184,7 @@ namespace Statistics
                         if (hasArchieved)
                         {
                             //不存在，复制当前记录过去
-                            newName = DataUtility.DataUtility.PathRightFileName(output, tempName, fi.Extension, "_new");
+                            newName = DataUtility.DataUtility.PathRightFileName(Util.PathExt.PathCombine(output, strType), tempName, fi.Extension, "_new");
                             _sr.ExcelWorkbook.SaveAs(newName, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, MSExcel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
                             temp_fi = new FileInfo(newName);
                             JobMethods.Statistic(_sr, pattern, Perfect, strCompany, strType, tempName, certId);
@@ -1366,7 +1374,7 @@ namespace Statistics
                         //找到序号的话，加入校核人的签名，删除其他sheet
                         if (stateIndex > 0 && stateIndex < _sr.ExcelWorkbook.Worksheets.Count)
                         {
-                            _sr.WriteImage(_sr.ExcelWorkbook, stateIndex, 29, 9, person, 45, 28, out success);
+                            _sr.WriteImage(_sr.ExcelWorkbook, stateIndex, 29, 9, Util.PathExt.PathCombine(Application.StartupPath, person.Path), 45, 28, out success);
                             for (int i = _sr.ExcelWorkbook.Worksheets.Count; i > 0; i--)
                             {
                                 if (i != stateIndex)
@@ -1889,7 +1897,7 @@ namespace Statistics
                     {
                         //不存在，复制当前记录过去
                         //1.合成新文件名，按新名另存，定义为temp_fi
-                        newName = DataUtility.DataUtility.PathCombineFolderFileExtension(output, DataUtility.DataUtility.FileNameCleanName(tempName), fi.Extension);
+                        newName = Util.PathExt.PathCombineFolderFileExtension(output, DataUtility.DataUtility.FileNameCleanName(tempName), fi.Extension);
                         fileText = newName;
                         _sr.ExcelWorkbook.SaveAs(newName, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, MSExcel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
                         temp_fi = new FileInfo(newName);

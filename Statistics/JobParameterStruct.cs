@@ -50,7 +50,7 @@ namespace Statistics
             dataTemp = dataT;
             createNew = createN;
 
-            tempFolder = DataUtility.DataUtility.PathCombine(startupPath, @"Temp\");
+            tempFolder = Util.PathExt.PathCombine(startupPath, @"Temp\");
             DataUtility.DataUtility.TryCreatFolder(tempFolder);
         }
 
@@ -202,7 +202,7 @@ namespace Statistics
         {
             get
             {
-                return DataUtility.DataUtility.PathCombine(DataUtility.DataUtility.PathCombineClassified(startupPath + @"\试验证书模板", DataPattern), certTemp);
+                return Util.PathExt.PathCombine(Util.PathExt.PathCombineClassified(startupPath + @"\试验证书模板", DataPattern), certTemp);
             }
         }
 
@@ -210,7 +210,7 @@ namespace Statistics
         {
             get
             {
-                return DataUtility.DataUtility.PathCombine(DataUtility.DataUtility.PathCombineClassified(startupPath + @"\试验记录模板", DataPattern), dataTemp);
+                return Util.PathExt.PathCombine(Util.PathExt.PathCombineClassified(startupPath + @"\试验记录模板", DataPattern), dataTemp);
             }
         }
 
@@ -242,7 +242,7 @@ namespace Statistics
                         return CertDLFolder;
                     case 1:
                         //生成空记录表的存放目录
-                        return DataUtility.DataUtility.PathCombineClassified(CurrentDataFolder, DataPattern);
+                        return Util.PathExt.PathCombineClassified(CurrentDataFolder, DataPattern);
                     default:
                         return InputFolder;
                 }
@@ -257,10 +257,10 @@ namespace Statistics
                 {
                     case 0:
                         //生成记录的存放位置
-                        return DataUtility.DataUtility.PathCombineClassified(CurrentDataFolder, DataPattern);
+                        return Util.PathExt.PathCombineClassified(CurrentDataFolder, DataPattern);
                     case 1:
                         //历史存档记录的位置
-                        return DataUtility.DataUtility.PathCombineClassified(HistoryDataFolder, DataPattern);
+                        return Util.PathExt.PathCombineClassified(HistoryDataFolder, DataPattern);
                     default:
                         return OutputFolder;
                 }

@@ -242,7 +242,7 @@ NPOI*.[Xx][Mm][Ll]
 ICSharpCode.SharpZipLib.dll
 log4net.dll
 log4net.config
-dog*.dll
+*dog*.dll
 PdfSharp.dll
 PdfSharp.xml
 dogvendorcode.cs
@@ -255,3 +255,6 @@ TestConsole/
 InfoGrabber/
 Statistics.csproj
 Deprecated*.txt
+*[Oo]ffice*.dll
+VBIDE.dll
+*.bmp

@@ -36,31 +36,31 @@ namespace Util
             switch (pattern)
             {
                 case 0:
-                    //检定
-                    keyword = "检定";
+                    //dose
+                    keyword = "剂量";
                     break;
                 case 1:
-                    //校准
-                    keyword = "校准";
+                    //ct
+                    keyword = "CT";
+                    break;
+                case 2:
+                    //kv
+                    keyword = "KV";
                     break;
             }
-            return PathCombine(folder, keyword);
+            return Path.Combine(folder, keyword);
         }
-        #endregion
 
-        #region Change
-        public static string PathChangeDirectory(string path, string directory)
-        {
-            return PathCombine(directory, PathGetFileName(path));
-        }
-        #endregion
-
-        #region Base Member
         public static string PathChangeExtension(string path, string extension)
         {
             return Path.ChangeExtension(path, extension);
         }
-        
+
+        public static string PathChangeDirectory(string path, string directory)
+        {
+            return Path.Combine(directory, Path.GetFileName(path));
+        }
+
         public static string PathGetFileName(string file)
         {
             return Path.GetFileName(file);
