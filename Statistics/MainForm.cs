@@ -260,7 +260,7 @@ namespace Statistics
                     isWorking = true;
                     button1.Text = "停止";
 
-                    ar = mi.BeginInvoke(new JobParameterStruct(Application.StartupPath, textBox1.Text, textBox7.Text, textBox6.Text, ProgramConfiguration.DocDownloadedFolder, ProgramConfiguration.CurrentExcelFolder, ProgramConfiguration.ArchivedExcelFolder, ProgramConfiguration.ArchivedPdfFolder, ProgramConfiguration.ArchivedCertificationFolder, comboBox1.SelectedIndex, comboBox2.SelectedIndex, comboBox6.SelectedIndex, comboBox3.Text, comboBox5.Text, comboBox4.Text, checkBox1.Checked), null, null);
+                    ar = mi.BeginInvoke(new JobParameterStruct(Application.StartupPath, textBox1.Text, textBox7.Text, textBox6.Text, comboBox1.SelectedIndex, comboBox2.SelectedIndex, comboBox6.SelectedIndex, comboBox3.Text, comboBox5.Text, comboBox4.Text, checkBox1.Checked), null, null);
                 }
             }
         }
@@ -691,14 +691,14 @@ namespace Statistics
             {
                 if (MessageBox.Show(@"没有选择任何操作类型，请点击确定后返回重试", "提示", MessageBoxButtons.OK) == DialogResult.OK) { }
             }
-            else if (pS.ActionType < 1 && (pS.FixType < 0 || pS.FixType > 1))
+            else if (pS.ActionType < 1 && ((int)pS.FixType < 0 || (int)pS.FixType > 1))
             {
                 if (MessageBox.Show(@"没有选择温度气压修正选项，请点击确定后返回重试", "提示", MessageBoxButtons.OK) == DialogResult.OK) { }
             }
             else if (MessageBox.Show(@"处理成功将会删除原纪录，是否要继续？", "提示", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 List<string> probfile = new List<string>();
-                UpdateProgress(0);
+                UpdateProgressDisplay(0);
 
                 if (inputFi != "")
                 {
@@ -736,7 +736,7 @@ namespace Statistics
                         ToolStripStatusLabel_SetText("");
                     }
 
-                    UpdateProgress(100);
+                    UpdateProgressDisplay(100);
 
                     if (probfile.Count > 0)
                     {
@@ -799,7 +799,7 @@ namespace Statistics
                                 ToolStripStatusLabel_SetText("");
                             }
                             values += Step;
-                            UpdateProgress(values);
+                            UpdateProgressDisplay(values);
                             doneNumber++;
                             if (isStopping)
                             {
@@ -945,28 +945,28 @@ namespace Statistics
                     LogHelper.AddException(@"找不到模板excel中的标准模板页", true);
                 }
 
-                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 4, 2, tempName, out success);
-                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 5, 6, macType, out success);
-                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 5, 2, tempQiju, out success);
-                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 2, 12, str, out success);
-                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 4, 6, tempStress, out success);
+                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(4, 2), tempName);
+                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(5, 6), macType);
+                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(5, 2), tempQiju);
+                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(2, 12), str);
+                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(4, 6), tempStress);
 
                 if (needFix)
                 {
-                    _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 8, 13, "修正", out success);
+                    _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(8, 13), "修正");
                 }
                 else
                 {
                     //电离室->半导体
-                    MSExcel.Range rr = _sr.GetRange(_sr.ExcelWorkbook, ws1.Index, "L8", out success);
+                    MSExcel.Range rr = _sr.GetRange(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition("L8"));
                     rr.FormulaLocal = "";
                     rr.Formula = "";
                     rr.FormulaArray = "";
-                    _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 8, 12, "1.000000", "@", out success);
-                    _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 8, 13, "不修正", out success);
+                    _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(8, 12), "1.000000", "@");
+                    _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(8, 13), "不修正");
                 }
                 //写入记录者
-                _sr.WriteImage(_sr.ExcelWorkbook, ws1.Index, 29, 7, Util.PathExt.PathCombine(Application.StartupPath, person.Path), 45, 28, out success);
+                _sr.WriteImage(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(29, 7), Util.PathExt.PathCombine(Application.StartupPath, person.Path), 45, 28);
 
                 _sr.ExcelWorkbook.Save();
             }
@@ -1374,7 +1374,7 @@ namespace Statistics
                         //找到序号的话，加入校核人的签名，删除其他sheet
                         if (stateIndex > 0 && stateIndex < _sr.ExcelWorkbook.Worksheets.Count)
                         {
-                            _sr.WriteImage(_sr.ExcelWorkbook, stateIndex, 29, 9, Util.PathExt.PathCombine(Application.StartupPath, person.Path), 45, 28, out success);
+                            _sr.WriteImage(_sr.ExcelWorkbook, stateIndex, new ExcelPosition(29, 9), Util.PathExt.PathCombine(Application.StartupPath, person.Path), 45, 28);
                             for (int i = _sr.ExcelWorkbook.Worksheets.Count; i > 0; i--)
                             {
                                 if (i != stateIndex)
@@ -1783,7 +1783,7 @@ namespace Statistics
                 else
                 {
                     //无规范的证书号
-                    rr = _sr.GetRange(_sr.ExcelWorkbook, item.Index, "A4", out checkClear);
+                    rr = _sr.GetRange(_sr.ExcelWorkbook, item.Index, new ExcelPosition("A4"));
                     if (!item.Name.Contains(@"标准模板") && rr.Text.ToString().Trim().StartsWith(@"送校单位"))
                     {
                         //有记录不包含规范的证书编号
@@ -1794,17 +1794,17 @@ namespace Statistics
                 renameStr = _sr.GetText(_sr.ExcelWorkbook, item.Index, new ExcelPosition(5, 7)).ToLower();
                 if (renameStr.StartsWith(@"编号："))
                 {
-                    _sr.WriteValue(_sr.ExcelWorkbook, item.Index, 5, 7, renameStr.Replace(@"编号：", @"主机编号："), out checkClear);
+                    _sr.WriteValue(_sr.ExcelWorkbook, item.Index, new ExcelPosition(5, 7), renameStr.Replace(@"编号：", @"主机编号："));
                 }
 
                 renameStr = _sr.GetText(_sr.ExcelWorkbook, item.Index, new ExcelPosition(5, 11)).ToLower();
                 if (renameStr.StartsWith(@"电离室号："))
                 {
-                    _sr.WriteValue(_sr.ExcelWorkbook, item.Index, 5, 11, renameStr.Replace(@"电离室号：", @"探测器编号："), out checkClear);
+                    _sr.WriteValue(_sr.ExcelWorkbook, item.Index, new ExcelPosition(5, 11), renameStr.Replace(@"电离室号：", @"探测器编号："));
                 }
                 else if (renameStr.StartsWith(@"探测器号："))
                 {
-                    _sr.WriteValue(_sr.ExcelWorkbook, item.Index, 5, 11, renameStr.Replace(@"探测器号：", @"探测器编号："), out checkClear);
+                    _sr.WriteValue(_sr.ExcelWorkbook, item.Index, new ExcelPosition(5, 11), renameStr.Replace(@"探测器号：", @"探测器编号："));
                 }
             }
             _sr.ExcelWorkbook.Save();
@@ -2064,7 +2064,6 @@ namespace Statistics
         }
 
         #endregion
-
         #endregion
     }
 }

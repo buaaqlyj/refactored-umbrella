@@ -22,6 +22,8 @@ namespace Statistics.Configuration
 
         private static string programFolder;
 
+        private static string tempFolder;
+
         private static Dictionary<string, StandardInstrument> standard = new Dictionary<string, StandardInstrument>();
         private static Dictionary<string, List<string>> standardUsage = new Dictionary<string, List<string>>();
 
@@ -37,22 +39,25 @@ namespace Statistics.Configuration
             ProgramConfiguration.dataTemplateFolder = programFolder + @"\试验记录模板";
             ProgramConfiguration.certTemplateFolder = programFolder + @"\试验证书模板";
 
-            DataUtility.DataUtility.TryCreatFolder(certTemplateFolder);
-            DataUtility.DataUtility.TryCreatFolders(certTemplateFolder, new string[] { "CT", "KV", "剂量" });
-            DataUtility.DataUtility.TryCreatFolder(dataTemplateFolder);
-            DataUtility.DataUtility.TryCreatFolders(dataTemplateFolder, new string[] { "CT", "KV", "剂量" });
-            DataUtility.DataUtility.TryCreatFolder(docDownloadedFolder);
-            DataUtility.DataUtility.TryCreatFolder(archivedCertificationFolder);
-            DataUtility.DataUtility.TryCreatFolder(currentExcelFolder);
-            DataUtility.DataUtility.TryCreatFolders(currentExcelFolder, new string[] { "CT", "KV", "剂量" });
-            DataUtility.DataUtility.TryCreatFolder(archivedPdfFolder);
-            DataUtility.DataUtility.TryCreatFolder(archivedExcelFolder);
-            DataUtility.DataUtility.TryCreatFolders(archivedExcelFolder, new string[] { "CT", "KV", "剂量" });
+            ProgramConfiguration.tempFolder = programFolder + @"\Temp";
+            
+            DataUtility.DataUtility.TryCreateFolder(certTemplateFolder);
+            DataUtility.DataUtility.TryCreateFolders(certTemplateFolder, new string[] { "CT", "KV", "剂量" });
+            DataUtility.DataUtility.TryCreateFolder(dataTemplateFolder);
+            DataUtility.DataUtility.TryCreateFolders(dataTemplateFolder, new string[] { "CT", "KV", "剂量" });
+            DataUtility.DataUtility.TryCreateFolder(docDownloadedFolder);
+            DataUtility.DataUtility.TryCreateFolder(archivedCertificationFolder);
+            DataUtility.DataUtility.TryCreateFolder(currentExcelFolder);
+            DataUtility.DataUtility.TryCreateFolders(currentExcelFolder, new string[] { "CT", "KV", "剂量" });
+            DataUtility.DataUtility.TryCreateFolder(archivedPdfFolder);
+            DataUtility.DataUtility.TryCreateFolder(archivedExcelFolder);
+            DataUtility.DataUtility.TryCreateFolders(archivedExcelFolder, new string[] { "CT", "KV", "剂量" });
+            DataUtility.DataUtility.TryCreateFolder(tempFolder);
 
             TestedInstrument.InitialTypes(programFolder);
-            DataUtility.DataUtility.TryCreatFolders(archivedExcelFolder + @"\CT", TestedInstrument.CTTypes);
-            DataUtility.DataUtility.TryCreatFolders(archivedExcelFolder + @"\KV", TestedInstrument.KVTypes);
-            DataUtility.DataUtility.TryCreatFolders(archivedExcelFolder + @"\剂量", TestedInstrument.DoseTypes);
+            DataUtility.DataUtility.TryCreateFolders(archivedExcelFolder + @"\CT", TestedInstrument.CTTypes);
+            DataUtility.DataUtility.TryCreateFolders(archivedExcelFolder + @"\KV", TestedInstrument.KVTypes);
+            DataUtility.DataUtility.TryCreateFolders(archivedExcelFolder + @"\剂量", TestedInstrument.DoseTypes);
 
             ExpiredDataValidate();
         }
@@ -104,6 +109,10 @@ namespace Statistics.Configuration
             set
             {
                 docDownloadedFolder = value;
+                if (!Directory.Exists(docDownloadedFolder))
+                {
+                    DataUtility.DataUtility.TryCreateFolder(docDownloadedFolder);
+                }
             }
         }
 
@@ -116,6 +125,10 @@ namespace Statistics.Configuration
             set
             {
                 currentExcelFolder = value;
+                if (!Directory.Exists(currentExcelFolder))
+                {
+                    DataUtility.DataUtility.TryCreateFolder(currentExcelFolder);
+                }
             }
         }
 
@@ -128,6 +141,10 @@ namespace Statistics.Configuration
             set
             {
                 archivedExcelFolder = value;
+                if (!Directory.Exists(archivedExcelFolder))
+                {
+                    DataUtility.DataUtility.TryCreateFolder(archivedExcelFolder);
+                }
             }
         }
 
@@ -140,6 +157,10 @@ namespace Statistics.Configuration
             set
             {
                 archivedPdfFolder = value;
+                if (!Directory.Exists(archivedPdfFolder))
+                {
+                    DataUtility.DataUtility.TryCreateFolder(archivedPdfFolder);
+                }
             }
         }
 
@@ -152,6 +173,10 @@ namespace Statistics.Configuration
             set
             {
                 archivedCertificationFolder = value;
+                if (!Directory.Exists(archivedCertificationFolder))
+                {
+                    DataUtility.DataUtility.TryCreateFolder(archivedCertificationFolder);
+                }
             }
         }
 
@@ -164,6 +189,10 @@ namespace Statistics.Configuration
             set
             {
                 dataTemplateFolder = value;
+                if (!Directory.Exists(dataTemplateFolder))
+                {
+                    DataUtility.DataUtility.TryCreateFolder(dataTemplateFolder);
+                }
             }
         }
 
@@ -176,6 +205,10 @@ namespace Statistics.Configuration
             set
             {
                 certTemplateFolder = value;
+                if (!Directory.Exists(certTemplateFolder))
+                {
+                    DataUtility.DataUtility.TryCreateFolder(certTemplateFolder);
+                }
             }
         }
 
@@ -188,6 +221,26 @@ namespace Statistics.Configuration
             set
             {
                 programFolder = value;
+                if (!Directory.Exists(programFolder))
+                {
+                    DataUtility.DataUtility.TryCreateFolder(programFolder);
+                }
+            }
+        }
+
+        public static string TempFolder
+        {
+            get
+            {
+                return tempFolder;
+            }
+            set
+            {
+                tempFolder = value;
+                if (!Directory.Exists(tempFolder))
+                {
+                    DataUtility.DataUtility.TryCreateFolder(tempFolder);
+                }
             }
         }
         #endregion

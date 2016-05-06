@@ -19,7 +19,7 @@ namespace Statistics.DataUtility
     {
         #region Folder
 
-        public static void TryCreatFolder(string folderName)
+        public static void TryCreateFolder(string folderName)
         {
             DirectoryInfo di = new DirectoryInfo(folderName);
             if (!di.Exists)
@@ -28,11 +28,11 @@ namespace Statistics.DataUtility
             }
         }
 
-        public static void TryCreatFolders(string fatherFolderName, string[] folderNames)
+        public static void TryCreateFolders(string fatherFolderName, string[] folderNames)
         {
             foreach (string item in folderNames)
             {
-                TryCreatFolder(Path.Combine(fatherFolderName, FileNameCleanName(item)));
+                TryCreateFolder(Path.Combine(fatherFolderName, FileNameCleanName(item)));
             }
         }
 
@@ -557,32 +557,6 @@ namespace Statistics.DataUtility
             }
         }
         #endregion
-
-        /// <summary>
-        /// 根据坐标生成位置字符串
-        /// </summary>
-        /// <param name="row"></param>
-        /// <param name="col"></param>
-        /// <returns></returns>
-        public static string PositionString(int row, int col)
-        {
-            string pos = "";
-            ExcelPosition.ChangeNumberToString(row, col, out pos);
-            return pos;
-        }
-        /// <summary>
-        /// 根据坐标生成位置字符串
-        /// </summary>
-        /// <param name="row"></param>
-        /// <param name="col"></param>
-        /// <returns></returns>
-        public static string PositionString(int row, int col, out bool success)
-        {
-            string pos = "";
-            ExcelPosition.ChangeNumberToString(row, col, out pos);
-            success = true;
-            return pos;
-        }
 
         public static string GetLastPartFromName(string text)
         {

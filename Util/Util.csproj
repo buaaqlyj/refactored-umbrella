@@ -37,6 +37,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArrayExt.cs" />
+    <Compile Include="EnumExt.cs" />
     <Compile Include="PathExt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

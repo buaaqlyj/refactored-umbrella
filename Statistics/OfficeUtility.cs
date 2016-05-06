@@ -226,28 +226,7 @@ namespace Statistics
         /// <param name="success"></param>
         public void WriteValue(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position, string wValue)
         {
-            if (_excelDoc != null)
-            {
-                try
-                {
-                    MSExcel.Worksheet _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
-                    _excelSht.Cells[position.RowIndex, position.ColumnIndex] = wValue;
-                    MSExcel.Range _excelRge = _excelSht.get_Range(new ExcelPosition(position.RowIndex, position.ColumnIndex).PositionString);
-                    //_excelRge.NumberFormatLocal = "0.00_ ";
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Log.LogHelper.AddLog(@"异常230", ex.Message, true);
-                    Log.LogHelper.AddLog(@"异常230", "位置：" + position.PositionString, true);
-                    return;
-                }
-            }
-            else
-            {
-                Log.LogHelper.AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
-                return;
-            }
+            WriteValue(_excelDoc, sheetIndex, position, wValue, "@");
         }
         /// <summary>
         /// 向某个坐标位置写入特定格式的文本
@@ -264,15 +243,16 @@ namespace Statistics
             {
                 try
                 {
-                    bool checkSta;
                     MSExcel.Worksheet _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
                     _excelSht.Cells[position.RowIndex, position.ColumnIndex] = wValue;
-                    MSExcel.Range _excelRge = _excelSht.get_Range(DataUtility.DataUtility.PositionString(position.RowIndex, position.ColumnIndex, out checkSta), DataUtility.DataUtility.PositionString(position.RowIndex, position.ColumnIndex, out checkSta));
+                    MSExcel.Range _excelRge = _excelSht.get_Range(position.PositionString);
                     _excelRge.NumberFormatLocal = numberFormat;
                     return;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    LogHelper.AddLog(@"异常230", ex.Message, true);
+                    LogHelper.AddLog(@"异常230", "位置：" + position.PositionString, true);
                     return;
                 }
             }
@@ -296,24 +276,20 @@ namespace Statistics
             {
                 try
                 {
-                    bool checkSta;
                     MSExcel.Worksheet _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
                     _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
-                    MSExcel.Range _excelRge = _excelSht.get_Range(DataUtility.DataUtility.PositionString(position.RowIndex, position.ColumnIndex, out checkSta), DataUtility.DataUtility.PositionString(position.RowIndex, position.ColumnIndex, out checkSta));
+                    MSExcel.Range _excelRge = _excelSht.get_Range(position.PositionString);
                     _excelRge.FormulaLocal = wValue;
-                    return;
                 }
                 catch (Exception ex)
                 {
                     LogHelper.AddLog(@"异常36", ex.Message, true);
                     LogHelper.AddLog(@"异常37", "  " + ex.TargetSite.ToString(), true);
-                    return;
                 }
             }
             else
             {
                 LogHelper.AddLog(@"异常38", @"文件没有正常打开，无法读取数据", true);
-                return;
             }
         }
         /// <summary>
@@ -483,15 +459,14 @@ namespace Statistics
         /// 注意：图片必须是绝对物理路径    /// </summary>  
         /// <param name="RangeName">单元格名称，例如：B4</param>  
         /// <param name="PicturePath">要插入图片的绝对路径。</param> 
-        public void WriteImage(MSExcel._Workbook _excelDoc, int sheetIndex, int row, int col, string fileName, out bool success)
+        public void WriteImage(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position, string fileName)
         {
             if (_excelDoc != null)
             {
                 try
                 {
-                    bool checkSta;
                     MSExcel.Worksheet _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
-                    MSExcel.Range _excelRge = _excelSht.get_Range(DataUtility.DataUtility.PositionString(row, col, out checkSta), DataUtility.DataUtility.PositionString(row, col, out checkSta));
+                    MSExcel.Range _excelRge = _excelSht.get_Range(position.PositionString);
                     _excelRge.Select();
                     MSExcel.Pictures pics = (MSExcel.Pictures)_excelSht.Pictures(Missing.Value);
                     pics.Insert(fileName, Missing.Value);
@@ -501,22 +476,16 @@ namespace Statistics
                     //OleSetClipboard(data);
                     //Clipboard.SetData(DataFormats.Bitmap, image);
                     //_excelSht.Paste();
-                    success = checkSta;
-                    return;
                 }
                 catch (Exception ex)
                 {
-                    success = false;
                     LogHelper.AddLog(@"异常30", ex.Message, true);
                     LogHelper.AddLog(@"异常31", "  " + ex.TargetSite.ToString(), true);
-                    return;
                 }
             }
             else
             {
-                success = false;
                 LogHelper.AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
-                return;
             }
         }
         /// <summary> 
@@ -527,43 +496,36 @@ namespace Statistics
         /// <param name="PicturePath">要插入图片的绝对路径。</param>  
         /// <param name="PictuteWidth">插入后，图片在Excel中显示的宽度。</param>    
         /// <param name="PictureHeight">插入后，图片在Excel中显示的高度。</param>    
-        public void WriteImage(MSExcel._Workbook _excelDoc, int sheetIndex, int row, int col, string fileName, float PictuteWidth, float PictureHeight, out bool success)
+        public void WriteImage(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position, string fileName, float PictuteWidth, float PictureHeight)
         {
             if (_excelDoc != null)
             {
                 try
                 {
-                    bool checkSta;
                     float PicLeft, PicTop;
                     MSExcel.Worksheet _excelSht = (MSExcel.Worksheet)_excelDoc.Worksheets[sheetIndex];
-                    MSExcel.Range _excelRge = _excelSht.get_Range(DataUtility.DataUtility.PositionString(row, col, out checkSta), DataUtility.DataUtility.PositionString(row, col, out checkSta));
+                    MSExcel.Range _excelRge = _excelSht.get_Range(position.PositionString);
                     _excelRge.Select();
                     PicLeft = Convert.ToSingle(_excelRge.Left);
                     PicTop = Convert.ToSingle(_excelRge.Top);
                     _excelSht.Shapes.AddPicture(fileName, Microsoft.Office.Core.MsoTriState.msoFalse, Microsoft.Office.Core.MsoTriState.msoTrue, PicLeft, PicTop, PictuteWidth, PictureHeight);
-                    success = checkSta;
-                    return;
                 }
                 catch (Exception ex)
                 {
-                    success = false;
                     LogHelper.AddLog(@"异常30", ex.Message, true);
                     LogHelper.AddLog(@"异常31", "  " + ex.TargetSite.ToString(), true);
-                    return;
                 }
             }
             else
             {
-                success = false;
                 LogHelper.AddLog(@"异常32", @"文件没有正常打开，无法读取数据", true);
-                return;
             }
         }
 
-        public bool HadNumber(MSExcel._Workbook _excelDoc, int sheetIndex, int row, int col)
+        public bool HadNumber(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position)
         {
             double tempDig;
-            string text = GetText(_excelDoc, sheetIndex, new ExcelPosition(row, col));
+            string text = GetText(_excelDoc, sheetIndex, position);
             if (text != "-2146826281" && double.TryParse(text, out tempDig))
             {
                 return true;
@@ -1032,7 +994,6 @@ namespace Statistics
         {
             string volText = "";
             string halfLayerText = "";
-            bool checkClear;
 
             switch (cri.Voltage)
             {
@@ -1082,14 +1043,14 @@ namespace Statistics
             }
             if (volText != "")
             {
-                WriteValue(_excelDoc, sheetIndex, 5, columnIndex, volText, out checkClear);
+                WriteValue(_excelDoc, sheetIndex, new ExcelPosition(5, columnIndex), volText);
             }
             if (halfLayerText != "")
             {
-                WriteValue(_excelDoc, sheetIndex, 6, columnIndex, halfLayerText, out checkClear);
+                WriteValue(_excelDoc, sheetIndex, new ExcelPosition(6, columnIndex), halfLayerText);
             }
-            WriteValue(_excelDoc, sheetIndex, 7, columnIndex, @"校准因子", out checkClear);
-            WriteValue(_excelDoc, sheetIndex, 7, columnIndex + 1, @"年稳定性", out checkClear);
+            WriteValue(_excelDoc, sheetIndex, new ExcelPosition(7, columnIndex), @"校准因子");
+            WriteValue(_excelDoc, sheetIndex, new ExcelPosition(7, columnIndex + 1), @"年稳定性");
         }
 
         public void WriteCriterionToStatistic(MSExcel._Workbook _excelDoc, int sheetIndex, KVCriterion cri, int columnIndex)
@@ -1097,7 +1058,6 @@ namespace Statistics
             string volText = "";
             string halfLayerText = "";
             string title2 = @"相对固有误差";
-            bool checkClear;
 
             switch (cri.Voltage)
             {
@@ -1149,15 +1109,15 @@ namespace Statistics
             }
             if (volText != "")
             {
-                WriteValue(_excelDoc, sheetIndex, 5, columnIndex, volText, out checkClear);
+                WriteValue(_excelDoc, sheetIndex, new ExcelPosition(5, columnIndex), volText);
             }
             if (halfLayerText != "")
             {
-                WriteValue(_excelDoc, sheetIndex, 6, columnIndex, halfLayerText, out checkClear);
+                WriteValue(_excelDoc, sheetIndex, new ExcelPosition(6, columnIndex), halfLayerText);
             }
-            WriteValue(_excelDoc, sheetIndex, 7, columnIndex, @"平均值", out checkClear);
-            WriteValue(_excelDoc, sheetIndex, 7, columnIndex + 1, title2, out checkClear);
-            WriteValue(_excelDoc, sheetIndex, 7, columnIndex + 2, @"年稳定性", out checkClear);
+            WriteValue(_excelDoc, sheetIndex, new ExcelPosition(7, columnIndex), @"平均值");
+            WriteValue(_excelDoc, sheetIndex, new ExcelPosition(7, columnIndex + 1), title2);
+            WriteValue(_excelDoc, sheetIndex, new ExcelPosition(7, columnIndex + 2), @"年稳定性");
         }
 
         public void WriteCriterionToData(MSExcel._Workbook _excelDoc, int sheetIndex, NormalDoseCriterion cri, int columnIndex)
@@ -1165,7 +1125,6 @@ namespace Statistics
             string criText = "";
             string volText = "";
             string halfLayerText = "";
-            bool checkClear;
 
             switch (cri.Voltage)
             {
@@ -1225,15 +1184,15 @@ namespace Statistics
             }
             if (criText != "")
             {
-                WriteValue(_excelDoc, sheetIndex, 13, columnIndex, criText, out checkClear);
+                WriteValue(_excelDoc, sheetIndex, new ExcelPosition(13, columnIndex), criText);
             }
             if (volText != "")
             {
-                WriteValue(_excelDoc, sheetIndex, 14, columnIndex, volText, out checkClear);
+                WriteValue(_excelDoc, sheetIndex, new ExcelPosition(14, columnIndex), volText);
             }
             if (halfLayerText != "")
             {
-                WriteValue(_excelDoc, sheetIndex, 15, columnIndex, halfLayerText, out checkClear);
+                WriteValue(_excelDoc, sheetIndex, new ExcelPosition(15, columnIndex), halfLayerText);
             }
         }
 
@@ -1241,11 +1200,10 @@ namespace Statistics
         {
             string volText = cri.Voltage;
             string ppvText = cri.PPV;
-            bool checkClear;
 
             if (ppvText != "")
             {
-                WriteValue(_excelDoc, sheetIndex, 14, columnIndex, ppvText, out checkClear);
+                WriteValue(_excelDoc, sheetIndex, new ExcelPosition(14, columnIndex), ppvText);
             }
         }
         #endregion
@@ -1316,7 +1274,7 @@ namespace Statistics
                 else
                 {
                     //规范sheet标签名为证书编号
-                    rr = GetRange(_excelDoc, item.Index, "L2", out checkClear);
+                    rr = GetRange(_excelDoc, item.Index, new ExcelPosition("L2"));
                     certId = rr.Text.ToString().Trim();
                     if (certId.StartsWith(@"20") && (certId.Length == 9 || certId.Length == 10))
                     {
@@ -1423,7 +1381,7 @@ namespace Statistics
                 else
                 {
                     //规范sheet标签名为证书编号
-                    rr = GetRange(_excelDoc, item.Index, "L2", out checkClear);
+                    rr = GetRange(_excelDoc, item.Index, new ExcelPosition("L2"));
                     certId = rr.Text.ToString().Trim();
                     if (certId.StartsWith(@"20") && (certId.Length == 9 || certId.Length == 10))
                     {
@@ -1477,8 +1435,6 @@ namespace Statistics
         /// <param name="pattern"></param>
         public void WriteStateTitle(MSExcel._Workbook _excelDoc, int pattern, int stateIndex, int limitPosition)
         {
-            bool checkClear;
-
             switch (pattern)
             {
                 case 0:
@@ -1499,14 +1455,14 @@ namespace Statistics
                     RGDose = (MSExcel.Range)WSDose.Cells[1, 7];
                     RGDose.Font.Size = 15;
                     //逐行写入内容标签
-                    WriteValue(_excelDoc, stateIndex, 1, 7, @"稳定性统计", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(1, 7), @"稳定性统计");
 
-                    WriteValue(_excelDoc, stateIndex, 2, 1, @"送校单位：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(2, 1), @"送校单位：");
 
-                    WriteValue(_excelDoc, stateIndex, 3, 1, @"仪器名称：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(3, 1), @"仪器名称：");
                     //写入每个规范对应的管电压和半值层
-                    WriteValue(_excelDoc, stateIndex, 5, 1, @"管电压", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 6, 1, @"半值层（mmAl）", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(5, 1), @"管电压");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(6, 1), @"半值层（mmAl）");
                     //foreach (KeyValuePair<Criterion, int> item in criList)
                     //{
                     //    if (item.Key != Criterion.Null)
@@ -1527,11 +1483,11 @@ namespace Statistics
                     WriteCriterionToStatistic(_excelDoc, stateIndex, NormalDoseCriterion.RQR_140, NormalDoseCriterion.RQR_140.Column);
                     WriteCriterionToStatistic(_excelDoc, stateIndex, NormalDoseCriterion.RQR10_150, NormalDoseCriterion.RQR10_150.Column);
                     
-                    WriteValue(_excelDoc, stateIndex, 7, 1, @"序号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 2, @"证书编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 3, @"仪器编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition, @"稳定性误差上限", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition + 1, @"稳定性误差下限", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 1), @"序号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 2), @"证书编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 3), @"仪器编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition), @"稳定性误差上限");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition + 1), @"稳定性误差下限");
                     break;
                 case 1:
                     //设置列宽
@@ -1551,14 +1507,14 @@ namespace Statistics
                     RGCT = (MSExcel.Range)WSCT.Cells[1, 7];
                     RGCT.Font.Size = 15;
                     //逐行写入内容标签
-                    WriteValue(_excelDoc, stateIndex, 1, 7, @"稳定性统计", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(1, 7), @"稳定性统计");
 
-                    WriteValue(_excelDoc, stateIndex, 2, 1, @"送校单位：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(2, 1), @"送校单位：");
 
-                    WriteValue(_excelDoc, stateIndex, 3, 1, @"仪器名称：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(3, 1), @"仪器名称：");
 
-                    WriteValue(_excelDoc, stateIndex, 5, 1, @"管电压", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 6, 1, @"半值层（mmAl）", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(5, 1), @"管电压");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(6, 1), @"半值层（mmAl）");
                     //foreach (KeyValuePair<Criterion,int> item in criList)
                     //{
                     //    if (item.Key != Criterion.Null)
@@ -1579,11 +1535,11 @@ namespace Statistics
                     WriteCriterionToStatistic(_excelDoc, stateIndex, NormalDoseCriterion.RQR_140, NormalDoseCriterion.RQR_140.Column);
                     WriteCriterionToStatistic(_excelDoc, stateIndex, NormalDoseCriterion.RQR10_150, NormalDoseCriterion.RQR10_150.Column);
 
-                    WriteValue(_excelDoc, stateIndex, 7, 1, @"序号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 2, @"证书编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 3, @"仪器编号", out checkClear);;
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition, @"稳定性误差上限", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition + 1, @"稳定性误差下限", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 1), @"序号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 2), @"证书编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 3), @"仪器编号");;
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition), @"稳定性误差上限");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition + 1), @"稳定性误差下限");
                     break;
                 case 2:
                     //设置列宽
@@ -1603,14 +1559,14 @@ namespace Statistics
                     RGKV = (MSExcel.Range)WSKV.Cells[1, 7];
                     RGKV.Font.Size = 15;
                     //逐行写入内容标签
-                    WriteValue(_excelDoc, stateIndex, 1, 7, @"稳定性统计", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(1, 7), @"稳定性统计");
 
-                    WriteValue(_excelDoc, stateIndex, 2, 1, @"送校单位：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(2, 1), @"送校单位：");
 
-                    WriteValue(_excelDoc, stateIndex, 3, 1, @"仪器名称：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(3, 1), @"仪器名称：");
                     //写入每个规范对应的管电压和半值层
-                    WriteValue(_excelDoc, stateIndex, 5, 1, @"管电压", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 6, 1, @"半值层（mmAl）", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(5, 1), @"管电压");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(6, 1), @"半值层（mmAl）");
 
                     WriteCriterionToStatistic(_excelDoc, stateIndex, KVCriterion.RQR2_40, KVCriterion.RQR2_40.Column);
                     WriteCriterionToStatistic(_excelDoc, stateIndex, KVCriterion.RQR3_50, KVCriterion.RQR3_50.Column);
@@ -1623,11 +1579,11 @@ namespace Statistics
                     WriteCriterionToStatistic(_excelDoc, stateIndex, KVCriterion.RQR_140, KVCriterion.RQR_140.Column);
                     WriteCriterionToStatistic(_excelDoc, stateIndex, KVCriterion.RQR10_150, KVCriterion.RQR10_150.Column);
                     
-                    WriteValue(_excelDoc, stateIndex, 7, 1, @"序号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 2, @"证书编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 3, @"仪器编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition, @"稳定性误差上限", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition + 1, @"稳定性误差下限", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 1), @"序号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 2), @"证书编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 3), @"仪器编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition), @"稳定性误差上限");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition + 1), @"稳定性误差下限");
                     break;
             }
         }
@@ -1637,8 +1593,6 @@ namespace Statistics
         /// <param name="pattern"></param>
         public void WriteStateTitle(MSExcel._Workbook _excelDoc, int pattern, int stateIndex, Dictionary<NormalDoseCriterion, int> criList, int limitPosition)
         {
-            bool checkClear;
-
             switch (pattern)
             {
                 case 0:
@@ -1659,14 +1613,14 @@ namespace Statistics
                     RGDose = (MSExcel.Range)WSDose.Cells[1, 7];
                     RGDose.Font.Size = 15;
                     //逐行写入内容标签
-                    WriteValue(_excelDoc, stateIndex, 1, 7, @"稳定性统计", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(1, 7), @"稳定性统计");
 
-                    WriteValue(_excelDoc, stateIndex, 2, 1, @"送校单位：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(2, 1), @"送校单位：");
 
-                    WriteValue(_excelDoc, stateIndex, 3, 1, @"仪器名称：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(3, 1), @"仪器名称：");
                     //写入每个规范对应的管电压和半值层
-                    WriteValue(_excelDoc, stateIndex, 5, 1, @"管电压", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 6, 1, @"半值层（mmAl）", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(5, 1), @"管电压");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(6, 1), @"半值层（mmAl）");
                     //foreach (KeyValuePair<Criterion, int> item in criList)
                     //{
                     //    if (item.Key != Criterion.Null)
@@ -1687,11 +1641,11 @@ namespace Statistics
                     WriteCriterionToStatistic(_excelDoc, stateIndex, NormalDoseCriterion.RQR_140, NormalDoseCriterion.RQR_140.Column);
                     WriteCriterionToStatistic(_excelDoc, stateIndex, NormalDoseCriterion.RQR10_150, NormalDoseCriterion.RQR10_150.Column);
 
-                    WriteValue(_excelDoc, stateIndex, 7, 1, @"序号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 2, @"证书编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 3, @"仪器编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition, @"稳定性误差上限", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition + 1, @"稳定性误差下限", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 1), @"序号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 2), @"证书编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 3), @"仪器编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition), @"稳定性误差上限");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition + 1), @"稳定性误差下限");
                     break;
                 case 1:
                     //设置列宽
@@ -1711,14 +1665,14 @@ namespace Statistics
                     RGCT = (MSExcel.Range)WSCT.Cells[1, 7];
                     RGCT.Font.Size = 15;
                     //逐行写入内容标签
-                    WriteValue(_excelDoc, stateIndex, 1, 7, @"稳定性统计", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(1, 7), @"稳定性统计");
 
-                    WriteValue(_excelDoc, stateIndex, 2, 1, @"送校单位：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(2, 1), @"送校单位：");
 
-                    WriteValue(_excelDoc, stateIndex, 3, 1, @"仪器名称：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(3, 1), @"仪器名称：");
 
-                    WriteValue(_excelDoc, stateIndex, 5, 1, @"管电压", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 6, 1, @"半值层（mmAl）", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(5, 1), @"管电压");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(6, 1), @"半值层（mmAl）");
                     //foreach (KeyValuePair<Criterion,int> item in criList)
                     //{
                     //    if (item.Key != Criterion.Null)
@@ -1739,11 +1693,11 @@ namespace Statistics
                     WriteCriterionToStatistic(_excelDoc, stateIndex, NormalDoseCriterion.RQR_140, NormalDoseCriterion.RQR_140.Column);
                     WriteCriterionToStatistic(_excelDoc, stateIndex, NormalDoseCriterion.RQR10_150, NormalDoseCriterion.RQR10_150.Column);
 
-                    WriteValue(_excelDoc, stateIndex, 7, 1, @"序号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 2, @"证书编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 3, @"仪器编号", out checkClear); ;
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition, @"稳定性误差上限", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition + 1, @"稳定性误差下限", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 1), @"序号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 2), @"证书编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 3), @"仪器编号"); ;
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition), @"稳定性误差上限");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition + 1), @"稳定性误差下限");
                     break;
                 case 2:
                     //设置列宽
@@ -1763,14 +1717,14 @@ namespace Statistics
                     RGKV = (MSExcel.Range)WSKV.Cells[1, 7];
                     RGKV.Font.Size = 15;
                     //逐行写入内容标签
-                    WriteValue(_excelDoc, stateIndex, 1, 7, @"稳定性统计", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(1, 7), @"稳定性统计");
 
-                    WriteValue(_excelDoc, stateIndex, 2, 1, @"送校单位：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(2, 1), @"送校单位：");
 
-                    WriteValue(_excelDoc, stateIndex, 3, 1, @"仪器名称：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(3, 1), @"仪器名称：");
                     //写入每个规范对应的管电压和半值层
-                    WriteValue(_excelDoc, stateIndex, 5, 1, @"管电压", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 6, 1, @"半值层（mmAl）", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(5, 1), @"管电压");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(6, 1), @"半值层（mmAl）");
 
                     WriteCriterionToStatistic(_excelDoc, stateIndex, KVCriterion.RQR2_40, KVCriterion.RQR2_40.Column);
                     WriteCriterionToStatistic(_excelDoc, stateIndex, KVCriterion.RQR3_50, KVCriterion.RQR3_50.Column);
@@ -1783,11 +1737,11 @@ namespace Statistics
                     WriteCriterionToStatistic(_excelDoc, stateIndex, KVCriterion.RQR_140, KVCriterion.RQR_140.Column);
                     WriteCriterionToStatistic(_excelDoc, stateIndex, KVCriterion.RQR10_150, KVCriterion.RQR10_150.Column);
 
-                    WriteValue(_excelDoc, stateIndex, 7, 1, @"序号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 2, @"证书编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 3, @"仪器编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition, @"稳定性误差上限", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition + 1, @"稳定性误差下限", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 1), @"序号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 2), @"证书编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 3), @"仪器编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition), @"稳定性误差上限");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition + 1), @"稳定性误差下限");
                     break;
             }
         }
@@ -1797,8 +1751,6 @@ namespace Statistics
         /// <param name="pattern"></param>
         public void WriteStateTitle(MSExcel._Workbook _excelDoc, int pattern, int stateIndex, Dictionary<KVCriterion, int> criList, int limitPosition)
         {
-            bool checkClear;
-
             switch (pattern)
             {
                 case 0:
@@ -1819,14 +1771,14 @@ namespace Statistics
                     RGDose = (MSExcel.Range)WSDose.Cells[1, 7];
                     RGDose.Font.Size = 15;
                     //逐行写入内容标签
-                    WriteValue(_excelDoc, stateIndex, 1, 7, @"稳定性统计", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(1, 7), @"稳定性统计");
 
-                    WriteValue(_excelDoc, stateIndex, 2, 1, @"送校单位：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(2, 1), @"送校单位：");
 
-                    WriteValue(_excelDoc, stateIndex, 3, 1, @"仪器名称：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(3, 1), @"仪器名称：");
                     //写入每个规范对应的管电压和半值层
-                    WriteValue(_excelDoc, stateIndex, 5, 1, @"管电压", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 6, 1, @"半值层（mmAl）", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(5, 1), @"管电压");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(6, 1), @"半值层（mmAl）");
                     //foreach (KeyValuePair<Criterion, int> item in criList)
                     //{
                     //    if (item.Key != Criterion.Null)
@@ -1847,11 +1799,11 @@ namespace Statistics
                     WriteCriterionToStatistic(_excelDoc, stateIndex, NormalDoseCriterion.RQR_140, NormalDoseCriterion.RQR_140.Column);
                     WriteCriterionToStatistic(_excelDoc, stateIndex, NormalDoseCriterion.RQR10_150, NormalDoseCriterion.RQR10_150.Column);
 
-                    WriteValue(_excelDoc, stateIndex, 7, 1, @"序号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 2, @"证书编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 3, @"仪器编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition, @"稳定性误差上限", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition + 1, @"稳定性误差下限", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 1), @"序号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 2), @"证书编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 3), @"仪器编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition), @"稳定性误差上限");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition + 1), @"稳定性误差下限");
                     break;
                 case 1:
                     //设置列宽
@@ -1871,14 +1823,14 @@ namespace Statistics
                     RGCT = (MSExcel.Range)WSCT.Cells[1, 7];
                     RGCT.Font.Size = 15;
                     //逐行写入内容标签
-                    WriteValue(_excelDoc, stateIndex, 1, 7, @"稳定性统计", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(1, 7), @"稳定性统计");
 
-                    WriteValue(_excelDoc, stateIndex, 2, 1, @"送校单位：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(2, 1), @"送校单位：");
 
-                    WriteValue(_excelDoc, stateIndex, 3, 1, @"仪器名称：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(3, 1), @"仪器名称：");
 
-                    WriteValue(_excelDoc, stateIndex, 5, 1, @"管电压", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 6, 1, @"半值层（mmAl）", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(5, 1), @"管电压");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(6, 1), @"半值层（mmAl）");
                     //foreach (KeyValuePair<Criterion,int> item in criList)
                     //{
                     //    if (item.Key != Criterion.Null)
@@ -1899,11 +1851,11 @@ namespace Statistics
                     WriteCriterionToStatistic(_excelDoc, stateIndex, NormalDoseCriterion.RQR_140, NormalDoseCriterion.RQR_140.Column);
                     WriteCriterionToStatistic(_excelDoc, stateIndex, NormalDoseCriterion.RQR10_150, NormalDoseCriterion.RQR10_150.Column);
 
-                    WriteValue(_excelDoc, stateIndex, 7, 1, @"序号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 2, @"证书编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 3, @"仪器编号", out checkClear); ;
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition, @"稳定性误差上限", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition + 1, @"稳定性误差下限", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 1), @"序号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 2), @"证书编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 3), @"仪器编号"); ;
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition), @"稳定性误差上限");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition + 1), @"稳定性误差下限");
                     break;
                 case 2:
                     //设置列宽
@@ -1923,14 +1875,14 @@ namespace Statistics
                     RGKV = (MSExcel.Range)WSKV.Cells[1, 7];
                     RGKV.Font.Size = 15;
                     //逐行写入内容标签
-                    WriteValue(_excelDoc, stateIndex, 1, 7, @"稳定性统计", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(1, 7), @"稳定性统计");
 
-                    WriteValue(_excelDoc, stateIndex, 2, 1, @"送校单位：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(2, 1), @"送校单位：");
 
-                    WriteValue(_excelDoc, stateIndex, 3, 1, @"仪器名称：", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(3, 1), @"仪器名称：");
                     //写入每个规范对应的管电压和半值层
-                    WriteValue(_excelDoc, stateIndex, 5, 1, @"管电压", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 6, 1, @"半值层（mmAl）", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(5, 1), @"管电压");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(6, 1), @"半值层（mmAl）");
 
                     WriteCriterionToStatistic(_excelDoc, stateIndex, KVCriterion.RQR2_40, KVCriterion.RQR2_40.Column);
                     WriteCriterionToStatistic(_excelDoc, stateIndex, KVCriterion.RQR3_50, KVCriterion.RQR3_50.Column);
@@ -1943,11 +1895,11 @@ namespace Statistics
                     WriteCriterionToStatistic(_excelDoc, stateIndex, KVCriterion.RQR_140, KVCriterion.RQR_140.Column);
                     WriteCriterionToStatistic(_excelDoc, stateIndex, KVCriterion.RQR10_150, KVCriterion.RQR10_150.Column);
 
-                    WriteValue(_excelDoc, stateIndex, 7, 1, @"序号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 2, @"证书编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, 3, @"仪器编号", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition, @"稳定性误差上限", out checkClear);
-                    WriteValue(_excelDoc, stateIndex, 7, limitPosition + 1, @"稳定性误差下限", out checkClear);
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 1), @"序号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 2), @"证书编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, 3), @"仪器编号");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition), @"稳定性误差上限");
+                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(7, limitPosition + 1), @"稳定性误差下限");
                     break;
             }
         }
@@ -1962,11 +1914,10 @@ namespace Statistics
         /// <param name="success"></param>
         public void FormulaAverageOneColumn(MSExcel._Workbook _excelDoc, int sheetIndex, int columnId, int rowIndex, int startRow, int endRow, out bool success)
         {
-            bool checkSta1, checkSta2, checkSta3;
             int digNumber = 0;
             for (int i = startRow; i <= endRow; i++)
             {
-                if (HadNumber(_excelDoc, sheetIndex, i, columnId))
+                if (HadNumber(_excelDoc, sheetIndex, new ExcelPosition(i, columnId)))
                 {
                     digNumber++;
                 }
@@ -1976,10 +1927,9 @@ namespace Statistics
             {
                 try
                 {
-                    MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, DataUtility.DataUtility.PositionString(rowIndex, columnId, out checkSta1), out success);
-                    _excelRge.Formula = "=STDEV(" + DataUtility.DataUtility.PositionString(startRow, columnId, out checkSta2) + ":" + DataUtility.DataUtility.PositionString(endRow, columnId, out checkSta3) + ")/AVERAGE(" + DataUtility.DataUtility.PositionString(startRow, columnId, out checkSta2) + ":" + DataUtility.DataUtility.PositionString(endRow, columnId, out checkSta3) + ")";
+                    MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, new ExcelPosition(rowIndex, columnId));
+                    _excelRge.Formula = "=STDEV(" + new ExcelPosition(startRow, columnId) + ":" + new ExcelPosition(endRow, columnId) + ")/AVERAGE(" + new ExcelPosition(startRow, columnId) + ":" + new ExcelPosition(endRow, columnId) + ")";
                     _excelRge.NumberFormatLocal = "0.0%";
-                    success = success && checkSta1 && checkSta2 && checkSta3;
                 }
                 catch (System.Exception ex)
                 {
@@ -2001,15 +1951,14 @@ namespace Statistics
         {
             try
             {
-                bool checkSta1, checkSta2;
-                string str2 = DataUtility.DataUtility.PositionString(row, col - 1, out success);
-                string str1 = DataUtility.DataUtility.PositionString(row - 1, col - 1, out checkSta1);
-                success = success && checkSta1;
-                MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, DataUtility.DataUtility.PositionString(row, col, out checkSta1), out checkSta2);
-                success = success && checkSta1 && checkSta2;
-                if (HadNumber(_excelDoc, sheetIndex, row, col - 1) && HadNumber(_excelDoc, sheetIndex, row - 1, col - 1))
+                ExcelPosition pos2 = new ExcelPosition(row, col - 1);
+                ExcelPosition pos1 = new ExcelPosition(row - 1, col - 1);
+                ExcelPosition pos = new ExcelPosition(row, col);
+                success = true;
+                MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, pos);
+                if (HadNumber(_excelDoc, sheetIndex, pos2) && HadNumber(_excelDoc, sheetIndex, pos1))
                 {
-                    _excelRge.Formula = "=(" + str1 + "-" + str2 + ")/" + str2;
+                    _excelRge.Formula = "=(" + pos1.PositionString + "-" + pos2.PositionString + ")/" + pos2.PositionString;
                     _excelRge.NumberFormatLocal = "0.0%";
                 }
                 if (_excelRge != null && _excelRge.Value2 != null)
@@ -2018,7 +1967,7 @@ namespace Statistics
                 }
                 else
                 {
-                    range = GetText(_excelDoc, sheetIndex, row, col, out success);
+                    range = GetText(_excelDoc, sheetIndex, pos);
                 }
             }
             catch (System.Exception ex)
@@ -2041,18 +1990,19 @@ namespace Statistics
         {
             try
             {
-                string str2 = DataUtility.DataUtility.PositionString(row, col - 2);
-                string str1 = DataUtility.DataUtility.PositionString(row - 1, col - 2);
-                MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, DataUtility.DataUtility.PositionString(row, col), out success);
-                if (HadNumber(_excelDoc, sheetIndex, row, col - 2) && HadNumber(_excelDoc, sheetIndex, row - 1, col - 2))
+                ExcelPosition pos1 = new ExcelPosition(row - 1, col - 2);
+                ExcelPosition pos2 = new ExcelPosition(row, col - 2);
+                ExcelPosition pos = new ExcelPosition(row, col);
+                MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, pos);
+                if (HadNumber(_excelDoc, sheetIndex, pos2) && HadNumber(_excelDoc, sheetIndex, pos1))
                 {
                     if (crit.Index > 2)
                     {
-                        _excelRge.Formula = "=(" + str2 + "-" + str1 + ")/" + str1;
+                        _excelRge.Formula = "=(" + pos2.PositionString + "-" + pos1.PositionString + ")/" + pos1.PositionString;
                     }
                     else
                     {
-                        _excelRge.Formula = "=" + str1 + "-" + str2;
+                        _excelRge.Formula = "=" + pos1.PositionString + "-" + pos2.PositionString;
                     }
                     _excelRge.NumberFormatLocal = "0.0%";
                     _excelDoc.Save();
@@ -2063,8 +2013,9 @@ namespace Statistics
                 }
                 else
                 {
-                    range = GetText(_excelDoc, sheetIndex, row, col, out success);
+                    range = GetText(_excelDoc, sheetIndex, pos);
                 }
+                success = true;
             }
             catch (System.Exception ex)
             {
@@ -2075,16 +2026,16 @@ namespace Statistics
             }
         }
 
-        public void ErrorCalculator(MSExcel._Workbook _excelDoc, int sheetIndex, int row, int col, out string range, out bool success)
+        public string ErrorCalculator(MSExcel._Workbook _excelDoc, int sheetIndex, ExcelPosition position)
         {
-            MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, DataUtility.DataUtility.PositionString(row, col), out success);
-            if (success && _excelRge != null && _excelRge.Value2 != null)
+            MSExcel.Range _excelRge = GetRange(_excelDoc, sheetIndex, position);
+            if (_excelRge != null && _excelRge.Value2 != null)
             {
-                range = _excelRge.Value2.ToString();
+                return _excelRge.Value2.ToString();
             }
             else
             {
-                range = GetText(_excelDoc, sheetIndex, row, col, out success);
+                return GetText(_excelDoc, sheetIndex, position);
             }
         }
 
@@ -2092,8 +2043,8 @@ namespace Statistics
         {
             string strMacSerial = "", strSensorSerial = "";
 
-            strMacSerial = "主机_" + GetMergeContent(_excelDoc, sourceIndex, 5, 7, 5, 8, new string[] { @"主机编号：", @"编号：" }, out checkClear);
-            strSensorSerial = GetMergeContent(_excelDoc, sourceIndex, 5, 11, 5, 12, new string[] { @"探测器编号：", "电离室号：", "探测器号：" }, out checkClear).Trim();
+            strMacSerial = "主机_" + GetMergeContent(_excelDoc, sourceIndex, new ExcelPosition(5, 7), new ExcelPosition(5, 8), new string[] { @"主机编号：", @"编号：" }, out checkClear);
+            strSensorSerial = GetMergeContent(_excelDoc, sourceIndex, new ExcelPosition(5, 11), new ExcelPosition(5, 12), new string[] { @"探测器编号：", "电离室号：", "探测器号：" }, out checkClear).Trim();
             if (strSensorSerial.Replace(@"/", "").Trim() != "")
             {
                 strSensorSerial = "_探测器_" + strSensorSerial.Trim();
@@ -2107,8 +2058,8 @@ namespace Statistics
 
         public string GetInsNumber(MSExcel._Workbook _excelDoc, int sourceIndex, out string strMacSerial, out string strSensorSerial, out bool checkClear)
         {
-            strMacSerial = "主机_" + GetMergeContent(_excelDoc, sourceIndex, 5, 7, 5, 8, new string[] { @"主机编号：", @"编号：" }, out checkClear);
-            strSensorSerial = GetMergeContent(_excelDoc, sourceIndex, 5, 11, 5, 12, new string[] { @"探测器编号：", "电离室号：", "探测器号：" }, out checkClear).Trim();
+            strMacSerial = "主机_" + GetMergeContent(_excelDoc, sourceIndex, new ExcelPosition(5, 7), new ExcelPosition(5, 8), new string[] { @"主机编号：", @"编号：" }, out checkClear);
+            strSensorSerial = GetMergeContent(_excelDoc, sourceIndex, new ExcelPosition(5, 11), new ExcelPosition(5, 12), new string[] { @"探测器编号：", "电离室号：", "探测器号：" }, out checkClear).Trim();
             if (strSensorSerial.Replace(@"/", " ").Trim() != "")
             {
                 strSensorSerial = "_探测器_" + strSensorSerial.Replace(@"/", " ").Trim();
@@ -2123,8 +2074,8 @@ namespace Statistics
         public string GenerateFileName(MSExcel._Workbook _excelDoc, int sourceIndex, out bool Perfect)
         {
             bool checkClear = true;
-            string strCompany = GetMergeContent(_excelDoc, sourceIndex, 4, 1, 4, 2, new string[] { @"送校单位：", @"单位名称：" }, out checkClear);
-            string strType = GetMergeContent(_excelDoc, sourceIndex, 5, 5, 5, 6, @"型号：", out checkClear);
+            string strCompany = GetMergeContent(_excelDoc, sourceIndex, new ExcelPosition(4, 1), new ExcelPosition(4, 2), new string[] { @"送校单位：", @"单位名称：" }, out checkClear);
+            string strType = GetMergeContent(_excelDoc, sourceIndex, new ExcelPosition(5, 5), new ExcelPosition(5, 6), @"型号：", out checkClear);
             string insNumber = GetInsNumber(_excelDoc, sourceIndex, out checkClear);
             Perfect = ((strCompany.Length * strType.Length * insNumber.Length) > 0);
             return strCompany + "_" + strType + "_" + insNumber;
@@ -2134,8 +2085,8 @@ namespace Statistics
         {
             bool checkClear = true;
 
-            strCompany = GetMergeContent(_excelDoc, sourceIndex, 4, 1, 4, 2, new string[] { @"送校单位：", @"单位名称：" }, out checkClear);
-            strType = GetMergeContent(_excelDoc, sourceIndex, 5, 5, 5, 6, @"型号：", out checkClear);
+            strCompany = GetMergeContent(_excelDoc, sourceIndex, new ExcelPosition(4, 1), new ExcelPosition(4, 2), new string[] { @"送校单位：", @"单位名称：" }, out checkClear);
+            strType = GetMergeContent(_excelDoc, sourceIndex, new ExcelPosition(5, 5), new ExcelPosition(5, 6), @"型号：", out checkClear);
             string insNumber = GetInsNumber(_excelDoc, sourceIndex, out strMacSerial, out strSensorSerial, out checkClear);
             Perfect = ((strCompany.Length * strType.Length * insNumber.Length) > 0);
             return strCompany + "_" + strType + "_" + insNumber;
@@ -2149,16 +2100,16 @@ namespace Statistics
             int dataline1 = 20;
             int dataline2 = 21;
             //编号
-            WriteValue(_excelDoc, stateIndex, destiLine, 1, countIndex.ToString(), "@", out checkClear);
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, 1), countIndex.ToString(), "@");
             //证书编号
-            WriteValue(_excelDoc, stateIndex, destiLine, 2, certId, out checkClear);
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, 2), certId);
             //仪器编号
             insNumber = GetInsNumber(_excelDoc, sourceIndex, out checkClear);
 
-            WriteValue(_excelDoc, stateIndex, destiLine, 3, insNumber, out checkClear);
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, 3), insNumber);
             //稳定性上下限
-            WriteValue(_excelDoc, stateIndex, destiLine, limitPosition, "0.05", out checkClear);
-            WriteValue(_excelDoc, stateIndex, destiLine, limitPosition + 1, "-0.05", out checkClear);
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, limitPosition), "0.05");
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, limitPosition + 1), "-0.05");
             
             //清空旧数据
             MSExcel._Worksheet ws = (MSExcel._Worksheet)_excelDoc.Sheets[stateIndex];
@@ -2176,14 +2127,14 @@ namespace Statistics
             {
                 if (GetCriterion(_excelDoc, sourceIndex, i, true, out criText, out crit) && criList.ContainsKey(crit))
                 {
-                    rr = GetRange(_excelDoc, sourceIndex, DataUtility.DataUtility.PositionString(dataline1, i), out checkClear);
+                    rr = GetRange(_excelDoc, sourceIndex, new ExcelPosition(dataline1, i));
                     if (rr != null && rr.Value2 != null)
                     {
                         rangeText = rr.Value2.ToString();
                         if (rangeText != "-2146826281" && double.TryParse(rangeText, out tempDig))
                         {
                             //平均值
-                            WriteValue(_excelDoc, stateIndex, destiLine, criList[crit], tempDig.ToString(), "0.000", out checkClear);
+                            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, criList[crit]), tempDig.ToString(), "0.000");
                             if (crit.Index > 2)
                             {
                                 dataline2 = 22;
@@ -2192,14 +2143,14 @@ namespace Statistics
                             {
                                 dataline2 = 21;
                             }
-                            rr = GetRange(_excelDoc, sourceIndex, DataUtility.DataUtility.PositionString(dataline2, i), out checkClear);
+                            rr = GetRange(_excelDoc, sourceIndex, new ExcelPosition(dataline2, i));
                             if (rr != null && rr.Value2 != null)
                             {
                                 rangeText = rr.Value2.ToString();
                                 if (rangeText != "-2146826281" && double.TryParse(rangeText, out tempDig))
                                 {
                                     //(相对)固有误差
-                                    WriteValue(_excelDoc, stateIndex, destiLine, criList[crit] + 1, tempDig.ToString(), "0.000", out checkClear);
+                                    WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, criList[crit] + 1), tempDig.ToString(), "0.000");
                                     //if (crit.Index > 2)
                                     //{
                                     //    //误差限与(相对)固有误差的差
@@ -2240,22 +2191,22 @@ namespace Statistics
             int countIndex = destiLine - 7;
             int dataline = 0;
             //编号
-            WriteValue(_excelDoc, stateIndex, destiLine, 1, countIndex.ToString(), "@", out checkClear);
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, 1), countIndex.ToString(), "@");
             //证书编号
-            WriteValue(_excelDoc, stateIndex, destiLine, 2, certId, out checkClear);
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, 2), certId);
             //仪器编号
             insNumber = GetInsNumber(_excelDoc, sourceIndex, out checkClear);
 
-            WriteValue(_excelDoc, stateIndex, destiLine, 3, insNumber, out checkClear);
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, 3), insNumber);
             //稳定性上下限
-            WriteValue(_excelDoc, stateIndex, destiLine, limitPosition, "0.05", out checkClear);
-            WriteValue(_excelDoc, stateIndex, destiLine, limitPosition + 1, "-0.05", out checkClear);
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, limitPosition), "0.05");
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, limitPosition + 1), "-0.05");
             //判断原数据位置
-            if (GetRange(_excelDoc, sourceIndex, "A24", out checkClear).Text.ToString().StartsWith(@"K"))
+            if (GetRange(_excelDoc, sourceIndex, new ExcelPosition("A24")).Text.ToString().StartsWith(@"K"))
             {
                 dataline = 24;
             }
-            else if (GetRange(_excelDoc, sourceIndex, "A25", out checkClear).Text.ToString().StartsWith(@"K"))
+            else if (GetRange(_excelDoc, sourceIndex, new ExcelPosition("A25")).Text.ToString().StartsWith(@"K"))
             {
                 dataline = 25;
             }
@@ -2280,13 +2231,13 @@ namespace Statistics
             {
                 if (GetCriterion(_excelDoc, sourceIndex, i, true, out criText, out crit) && criList.ContainsKey(crit))
                 {
-                    rr = GetRange(_excelDoc, sourceIndex, DataUtility.DataUtility.PositionString(dataline, i), out checkClear);
+                    rr = GetRange(_excelDoc, sourceIndex, new ExcelPosition(dataline, i));
                     if (rr != null)
                     {
                         rangeText = rr.Value2.ToString();
                         if (rangeText != "-2146826281" && double.TryParse(rangeText, out tempDig))
                         {
-                            WriteValue(_excelDoc, stateIndex, destiLine, criList[crit], tempDig.ToString(), "0.000", out checkClear);
+                            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, criList[crit]), tempDig.ToString(), "0.000");
                         }
                     }
                 }
@@ -2305,22 +2256,22 @@ namespace Statistics
             int countIndex = destiLine - 7;
             int dataline = 0;
             //编号
-            WriteValue(_excelDoc, stateIndex, destiLine, 1, countIndex.ToString(), "@", out checkClear);
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, 1), countIndex.ToString(), "@");
             //证书编号
-            WriteValue(_excelDoc, stateIndex, destiLine, 2, certId, out checkClear);
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, 2), certId);
             //仪器编号
             insNumber = GetInsNumber(_excelDoc, sourceIndex, out checkClear);
 
-            WriteValue(_excelDoc, stateIndex, destiLine, 3, insNumber, out checkClear);
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, 3), insNumber);
             //稳定性上下限
-            WriteValue(_excelDoc, stateIndex, destiLine, limitPosition, "0.05", out checkClear);
-            WriteValue(_excelDoc, stateIndex, destiLine, limitPosition + 1, "-0.05", out checkClear);
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, limitPosition), "0.05");
+            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, limitPosition + 1), "-0.05");
             //判断原数据位置
-            if (GetRange(_excelDoc, sourceIndex, "A24", out checkClear).Text.ToString().StartsWith(@"K"))
+            if (GetRange(_excelDoc, sourceIndex, new ExcelPosition("A24")).Text.ToString().StartsWith(@"K"))
             {
                 dataline = 24;
             }
-            else if (GetRange(_excelDoc, sourceIndex, "A25", out checkClear).Text.ToString().StartsWith(@"K"))
+            else if (GetRange(_excelDoc, sourceIndex, new ExcelPosition("A25")).Text.ToString().StartsWith(@"K"))
             {
                 dataline = 25;
             }
@@ -2336,7 +2287,7 @@ namespace Statistics
                 ws.Cells[destiLine, i] = "";
             }
             //判断单位是否含有cm，以进行倍数调整
-            string unitText = GetText(_excelDoc, sourceIndex, "M12", out checkClear);
+            string unitText = GetText(_excelDoc, sourceIndex, new ExcelPosition("M12"));
             double multipler = 1;
             if (unitText.ToLower().EndsWith("cm"))
             {
@@ -2361,14 +2312,14 @@ namespace Statistics
                 if (GetCriterion(_excelDoc, sourceIndex, i, true, out criText, out crit) && criList.ContainsKey(crit))
                 {
                     //CopyData(_excelDoc, sourceIndex, DataUtility.DataUtility.PositionString(dataline, i), _excelDoc, stateIndex, destiLine, criList[crit], "0.000_ ", out checkClear);
-                    rr = GetRange(_excelDoc, sourceIndex, DataUtility.DataUtility.PositionString(dataline, i), out checkClear);
+                    rr = GetRange(_excelDoc, sourceIndex, new ExcelPosition(dataline, i));
                     if (rr != null)
                     {
                         rangeText = rr.Value2.ToString();
                         if (rangeText != "-2146826281" && double.TryParse(rangeText, out tempDig))
                         {
                             tempDig *= multipler;
-                            WriteValue(_excelDoc, stateIndex, destiLine, criList[crit], tempDig.ToString(), "0.000", out checkClear);
+                            WriteValue(_excelDoc, stateIndex, new ExcelPosition(destiLine, criList[crit]), tempDig.ToString(), "0.000");
                         }
                     }
                 }
@@ -2386,7 +2337,7 @@ namespace Statistics
             {
                 for (int i = 8; i < lineIndex; i++)
                 {
-                    ErrorCalculator(_excelDoc, stateIndex, i, columnId + 1, out digStr1, out checkClear);
+                    digStr1 = ErrorCalculator(_excelDoc, stateIndex, new ExcelPosition(i, columnId + 1));
                     if (report && (newline < 0 || i == newline))
                     {
                         double.TryParse(digStr1, out dig1);
@@ -2477,7 +2428,7 @@ namespace Statistics
                 if (item.Name != "统计" && item.Name != "标准模板")
                 {
                     //规范sheet标签名为证书编号
-                    certId = GetText(_excelDoc, item.Index, "L2", out checkClear);
+                    certId = GetText(_excelDoc, item.Index, new ExcelPosition("L2"));
                     if (certId.StartsWith(@"20") && (certId.Length == 9 || certId.Length == 10))
                     {
                         if (firstTime)
@@ -2554,19 +2505,20 @@ namespace Statistics
                             bool isDouble = false;
                             for (int columnIndex = 4; columnIndex < 13; columnIndex += 2)
                             {
-                                text = GetText(_excelDoc, item.Index, DataUtility.DataUtility.PositionString(24, columnIndex), out checkClear);
+                                text = GetText(_excelDoc, item.Index, new ExcelPosition(24, columnIndex));
                                 isDouble = double.TryParse(text, out dig);
                                 if (isDouble)
                                 {
                                     if (dig > 2.0 || dig < 0.1)
                                     {
+                                        string reportText = "检查校验：" + item.Name + "页" + new ExcelPosition(24, columnIndex).PositionString + "位置出现异常的数据";
                                         if (fulltest)
                                         {
-                                            Log.LogHelper.AddException("检查校验：" + item.Name + "页" + DataUtility.DataUtility.PositionString(24, columnIndex) + "位置出现异常的数据", true);
+                                            Log.LogHelper.AddException(reportText, true);
                                         }
                                         else
                                         {
-                                            Log.LogHelper.AddDataError("检查校验：" + item.Name + "页" + DataUtility.DataUtility.PositionString(24, columnIndex) + "位置出现异常的数据", true);
+                                            Log.LogHelper.AddDataError(reportText, true);
                                         }
                                     }
                                 }
@@ -2576,7 +2528,7 @@ namespace Statistics
                     else
                     {
                         //无规范的证书号
-                        if (!item.Name.Contains(@"标准模板") && GetText(_excelDoc, item.Index, "A4", out checkClear).StartsWith(@"送校单位"))
+                        if (!item.Name.Contains(@"标准模板") && GetText(_excelDoc, item.Index, new ExcelPosition("A4")).StartsWith(@"送校单位"))
                         {
                             //有记录不包含规范的证书编号
                             pass = false;

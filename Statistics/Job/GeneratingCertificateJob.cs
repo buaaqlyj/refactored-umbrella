@@ -345,7 +345,7 @@ namespace Statistics.Job
                         //找到序号的话，加入校核人的签名，删除其他sheet
                         if (stateIndex > 0 && stateIndex < _sr.ExcelWorkbook.Worksheets.Count)
                         {
-                            _sr.WriteImage(_sr.ExcelWorkbook, stateIndex, 30, 9, Util.PathExt.PathCombine(ProgramConfiguration.ProgramFolder, person.Path), 45, 28, out success);
+                            _sr.WriteImage(_sr.ExcelWorkbook, stateIndex, new ExcelPosition(30, 9), Util.PathExt.PathCombine(ProgramConfiguration.ProgramFolder, person.Path), 45, 28);
                             for (int i = _sr.ExcelWorkbook.Worksheets.Count; i > 0; i--)
                             {
                                 if (i != stateIndex)

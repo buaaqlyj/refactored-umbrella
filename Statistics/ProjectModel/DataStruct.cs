@@ -162,7 +162,7 @@ namespace Statistics.ProjectModel
                 diav /= count2;
             }
             success = true;
-            this(daav, diav, rangeText, pattern);
+            //this(daav, diav, rangeText, pattern);
             return new DataStruct(daav, diav, rangeText, pattern);
         }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 
 using MSExcel = Microsoft.Office.Interop.Excel;
@@ -122,14 +121,14 @@ namespace Statistics.Job
                     LogHelper.AddException(@"找不到模板excel中的标准模板页", true);
                 }
 
-                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 4, 2, tempName, out success);
-                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 5, 6, macType, out success);
-                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 5, 2, tempQiju, out success);
-                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 2, 12, str, out success);
+                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(4, 2), tempName);
+                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(5, 6), macType);
+                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(5, 2), tempQiju);
+                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(2, 12), str);
 
                 LogHelper.State.Push("写入4个信息");
 
-                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 8, 13, EnumExt.GetDescriptionFromEnumValue<FixType>(fix), out success);
+                _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(8, 13), EnumExt.GetDescriptionFromEnumValue<FixType>(fix));
 
                 LogHelper.State.Push("写入修正信息");
 
@@ -143,7 +142,7 @@ namespace Statistics.Job
 
                     LogHelper.State.Push("不修正时清空公式");
 
-                    _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, 8, 12, "1.000000", "@", out success);
+                    _sr.WriteValue(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(8, 12), "1.000000", "@");
 
                     LogHelper.State.Push("写入1");
 
@@ -152,7 +151,7 @@ namespace Statistics.Job
                 LogHelper.State.Push("准备写入记录者图片");
 
                 //写入记录者
-                _sr.WriteImage(_sr.ExcelWorkbook, ws1.Index, 29, 7, PathExt.PathCombine(ProgramConfiguration.ProgramFolder, person.Path), 45, 28, out success);
+                _sr.WriteImage(_sr.ExcelWorkbook, ws1.Index, new ExcelPosition(29, 7), PathExt.PathCombine(ProgramConfiguration.ProgramFolder, person.Path), 45, 28);
                 LogHelper.State.Push("写完记录者图片");
                 _sr.ExcelWorkbook.Save();
                 LogHelper.State.Push("保存完毕");

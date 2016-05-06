@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Statistics.Configuration;
+using Statistics.ProjectModel;
+
 namespace Statistics
 {
     public class JobParameterStruct
@@ -28,7 +31,7 @@ namespace Statistics
         private string dataTemp;//记录模板文件名
         private bool createNew;//对新记录是否建档
 
-        public JobParameterStruct(string startupPath, string inputFi, string inputFo, string outputFo, string certDLFo, string currentDF, string historyDF, string pdfDF, string certFo, int pattern, int type, int fix, string macT, string certT, string dataT, bool createN)
+        public JobParameterStruct(string startupPath, string inputFi, string inputFo, string outputFo, int pattern, int type, int fix, string macT, string certT, string dataT, bool createN)
         {
             this.startupPath = startupPath;
 
@@ -36,11 +39,13 @@ namespace Statistics
             inputFolder = inputFo;
             outputFolder = outputFo;
 
-            certDLFolder = certDLFo;
-            currentDataFolder = currentDF;
-            historyDataFolder = historyDF;
-            pdfDataFolder = pdfDF;
-            certFolder = certFo;
+            certDLFolder = ProgramConfiguration.DocDownloadedFolder;
+            currentDataFolder = ProgramConfiguration.CurrentExcelFolder;
+            historyDataFolder = ProgramConfiguration.ArchivedExcelFolder;
+            pdfDataFolder = ProgramConfiguration.ArchivedPdfFolder;
+            certFolder = ProgramConfiguration.ArchivedCertificationFolder;
+
+            tempFolder = ProgramConfiguration.TempFolder;
 
             dataPattern = pattern;
             actionType = type;
@@ -49,9 +54,6 @@ namespace Statistics
             certTemp = certT;
             dataTemp = dataT;
             createNew = createN;
-
-            tempFolder = Util.PathExt.PathCombine(startupPath, @"Temp\");
-            DataUtility.DataUtility.TryCreatFolder(tempFolder);
         }
 
         public string InputFile
@@ -182,11 +184,11 @@ namespace Statistics
             }
         }
 
-        public int FixType
+        public FixType FixType
         {
             get
             {
-                return fixType;
+                return (FixType)fixType;
             }
         }
 
