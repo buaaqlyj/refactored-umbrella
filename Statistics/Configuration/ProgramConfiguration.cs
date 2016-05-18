@@ -42,16 +42,16 @@ namespace Statistics.Configuration
             ProgramConfiguration.tempFolder = programFolder + @"\Temp";
             
             DataUtility.DataUtility.TryCreateFolder(certTemplateFolder);
-            DataUtility.DataUtility.TryCreateFolders(certTemplateFolder, new string[] { "CT", "KV", "剂量" });
+            DataUtility.DataUtility.TryCreateFolders(certTemplateFolder, TestedInstrument.Criterions);
             DataUtility.DataUtility.TryCreateFolder(dataTemplateFolder);
-            DataUtility.DataUtility.TryCreateFolders(dataTemplateFolder, new string[] { "CT", "KV", "剂量" });
+            DataUtility.DataUtility.TryCreateFolders(dataTemplateFolder, TestedInstrument.Criterions);
             DataUtility.DataUtility.TryCreateFolder(docDownloadedFolder);
             DataUtility.DataUtility.TryCreateFolder(archivedCertificationFolder);
             DataUtility.DataUtility.TryCreateFolder(currentExcelFolder);
-            DataUtility.DataUtility.TryCreateFolders(currentExcelFolder, new string[] { "CT", "KV", "剂量" });
+            DataUtility.DataUtility.TryCreateFolders(currentExcelFolder, TestedInstrument.Criterions);
             DataUtility.DataUtility.TryCreateFolder(archivedPdfFolder);
             DataUtility.DataUtility.TryCreateFolder(archivedExcelFolder);
-            DataUtility.DataUtility.TryCreateFolders(archivedExcelFolder, new string[] { "CT", "KV", "剂量" });
+            DataUtility.DataUtility.TryCreateFolders(archivedExcelFolder, TestedInstrument.Criterions);
             DataUtility.DataUtility.TryCreateFolder(tempFolder);
 
             TestedInstrument.InitialTypes(programFolder);

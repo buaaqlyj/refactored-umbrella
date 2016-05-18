@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Statistics.Criterion;
-
-namespace Statistics.Criterion.Dose
+namespace Statistics.Criterion
 {
     public abstract class DoseCriterion : Criterion
     {

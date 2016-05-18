@@ -135,5 +135,13 @@ namespace Statistics.Instrument.Tested
                 return _existTypes.ToArray();
             }
         }
+
+        public static string[] Criterions
+        {
+            get
+            {
+                return new string[] { "CT", "KV", "剂量" };
+            }
+        }
     }
 }

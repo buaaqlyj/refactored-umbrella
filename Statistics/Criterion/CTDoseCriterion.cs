@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Statistics.Criterion.Dose
+namespace Statistics.Criterion
 {
     public class CTDoseCriterion : DoseCriterion
     {
